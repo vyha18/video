@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P2P Drawing App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        button, select, input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+            cursor: pointer;
+        }
+        button.active {
+            background-color: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+        canvas {
+            border: 1px solid #ddd;
+            background-color: white;
+            cursor: crosshair;
+        }
+        .color-picker {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .connection-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+        #peerList {
+            margin-top: 10px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            min-height: 50px;
+            background-color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Peer-to-Peer Drawing App</h1>
+        
+        <div class="controls">
+            <button id="drawBtn" class="active">Draw</button>
+            <button id="textBtn">Type Text</button>
+            <button id="eraseBtn">Erase</button>
+            
+            <select id="shapeSelect">
+                <option value="">Add Shape...</option>
+                <option value="rectangle">Rectangle</option>
+                <option value="circle">Circle</option>
+                <option value="line">Line</option>
+                <option value="triangle">Triangle</option>
+            </select>
+            
+            <div class="color-picker">
+                <label for="color">Color:</label>
+                <input type="color" id="color" value="#000000">
+            </div>
+            
+            <div class="color-picker">
+                <label for="size">Size:</label>
+                <input type="range" id="size" min="1" max="50" value="5">
+            </div>
+            
+            <button id="clearBtn">Clear Canvas</button>
+        </div>
+        
+        <canvas id="drawingCanvas" width="960" height="500"></canvas>
+        
+        <div class="connection-panel">
+            <h3>Peer Connections</h3>
+            <div>
+                <button id="startBtn">Start Sharing</button>
+                <button id="connectBtn">Connect to Peer</button>
+                <input type="text" id="peerIdInput" placeholder="Enter peer ID">
+            </div>
+            <div>
+                <p>Your ID: <span id="yourId"></span></p>
+                <p>Connected Peers:</p>
+                <div id="peerList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.4.7/peerjs.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('drawingCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // PeerJS connection variables
+            let peer;
+            let peerId;
+            const connections = {};
+            
+            // Tools and UI elements
+            const drawBtn = document.getElementById('drawBtn');
+            const textBtn = document.getElementById('textBtn');
+            const eraseBtn = document.getElementById('eraseBtn');
+            const shapeSelect = document.getElementById('shapeSelect');
+            const colorPicker = document.getElementById('color');
+            const sizeSlider = document.getElementById('size');
+            const clearBtn = document.getElementById('clearBtn');
+            const startBtn = document.getElementById('startBtn');
+            const connectBtn = document.getElementById('connectBtn');
+            const peerIdInput = document.getElementById('peerIdInput');
+            const yourIdSpan = document.getElementById('yourId');
+            const peerListDiv = document.getElementById('peerList');
+            
+            let isDrawing = false;
+            let currentTool = 'draw';
+            let startX, startY;
+            let textInput = '';
+            
+            // Set canvas background to white initially
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Set default drawing styles
+            ctx.strokeStyle = colorPicker.value;
+            ctx.fillStyle = colorPicker.value;
+            ctx.lineWidth = sizeSlider.value;
+            ctx.lineCap = 'round';
+            
+            // Initialize PeerJS
+            function initializePeer() {
+                peer = new Peer();
+                
+                peer.on('open', (id) => {
+                    peerId = id;
+                    yourIdSpan.textContent = id;
+                    console.log('My peer ID is: ' + id);
+                });
+                
+                peer.on('connection', (conn) => {
+                    console.log('Incoming connection from: ' + conn.peer);
+                    setupConnection(conn);
+                });
+                
+                peer.on('error', (err) => {
+                    console.error('PeerJS error:', err);
+                });
+            }
+            
+            // Set up a data connection
+            function setupConnection(conn) {
+                connections[conn.peer] = conn;
+                updatePeerList();
+                
+                conn.on('data', (data) => {
+                    handleIncomingDrawing(data);
+                });
+                
+                conn.on('close', () => {
+                    delete connections[conn.peer];
+                    updatePeerList();
+                });
+                
+                conn.on('error', (err) => {
+                    console.error('Connection error:', err);
+                });
+                
+                // Send current canvas state to new peer
+                sendDrawingData();
+            }
+            
+            // Connect to another peer
+            function connectToPeer(peerId) {
+                if (connections[peerId]) {
+                    console.log('Already connected to this peer');
+                    return;
+                }
+                
+                const conn = peer.connect(peerId);
+                setupConnection(conn);
+            }
+            
+            // Send drawing data to all connected peers
+            function sendDrawingData() {
+                const data = {
+                    type: 'canvasState',
+                    data: canvas.toDataURL()
+                };
+                
+                for (const peerId in connections) {
+                    connections[peerId].send(data);
+                }
+            }
+            
+            // Send drawing action to all connected peers
+            function sendDrawingAction(action) {
+                const data = {
+                    type: 'drawingAction',
+                    action: action
+                };
+                
+                for (const peerId in connections) {
+                    connections[peerId].send(data);
+                }
+            }
+            
+            // Handle incoming drawing data
+            function handleIncomingDrawing(data) {
+                if (data.type === 'canvasState') {
+                    // Load full canvas state
+                    const img = new Image();
+                    img.onload = function() {
+                        ctx.drawImage(img, 0, 0);
+                    };
+                    img.src = data.data;
+                } else if (data.type === 'drawingAction') {
+                    // Replay drawing action
+                    replayDrawingAction(data.action);
+                }
+            }
+            
+            // Replay a drawing action on this canvas
+            function replayDrawingAction(action) {
+                switch (action.type) {
+                    case 'draw':
+                        ctx.beginPath();
+                        ctx.moveTo(action.x1, action.y1);
+                        ctx.lineTo(action.x2, action.y2);
+                        ctx.stroke();
+                        break;
+                        
+                    case 'text':
+                        ctx.font = `${action.size * 3}px Arial`;
+                        ctx.fillText(action.text, action.x, action.y);
+                        break;
+                        
+                    case 'shape':
+                        drawShapeOnCanvas(action);
+                        break;
+                        
+                    case 'clear':
+                        ctx.fillStyle = 'white';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        ctx.fillStyle = colorPicker.value;
+                        break;
+                }
+            }
+            
+            // Draw a shape on canvas (for replaying)
+            function drawShapeOnCanvas(shape) {
+                ctx.beginPath();
+                switch (shape.shapeType) {
+                    case 'rectangle':
+                        ctx.rect(shape.x1, shape.y1, shape.x2 - shape.x1, shape.y2 - shape.y1);
+                        break;
+                    case 'circle':
+                        const radius = Math.sqrt(Math.pow(shape.x2 - shape.x1, 2) + Math.pow(shape.y2 - shape.y1, 2));
+                        ctx.arc(shape.x1, shape.y1, radius, 0, Math.PI * 2);
+                        break;
+                    case 'line':
+                        ctx.moveTo(shape.x1, shape.y1);
+                        ctx.lineTo(shape.x2, shape.y2);
+                        break;
+                    case 'triangle':
+                        ctx.moveTo(shape.x1, shape.y1);
+                        ctx.lineTo(shape.x2, shape.y2);
+                        ctx.lineTo(shape.x1 * 2 - shape.x2, shape.y2);
+                        ctx.closePath();
+                        break;
+                }
+                ctx.stroke();
+            }
+            
+            // Update the connected peers list
+            function updatePeerList() {
+                peerListDiv.innerHTML = '';
+                for (const peerId in connections) {
+                    const peerDiv = document.createElement('div');
+                    peerDiv.textContent = peerId;
+                    peerListDiv.appendChild(peerDiv);
+                }
+                
+                if (Object.keys(connections).length === 0) {
+                    peerListDiv.innerHTML = '<em>No connected peers</em>';
+                }
+            }
+            
+            // Event listeners for connection buttons
+            startBtn.addEventListener('click', initializePeer);
+            connectBtn.addEventListener('click', () => {
+                if (peerIdInput.value.trim()) {
+                    connectToPeer(peerIdInput.value.trim());
+                    peerIdInput.value = '';
+                }
+            });
+            
+            // Tools and drawing functionality (similar to original)
+            // Modified to send drawing actions to peers
+            
+            function setActiveTool(tool) {
+                currentTool = tool;
+                drawBtn.classList.remove('active');
+                textBtn.classList.remove('active');
+                eraseBtn.classList.remove('active');
+                
+                if (tool === 'draw') drawBtn.classList.add('active');
+                if (tool === 'text') textBtn.classList.add('active');
+                if (tool === 'erase') eraseBtn.classList.add('active');
+            }
+            
+            // Mouse events
+            canvas.addEventListener('mousedown', startAction);
+            canvas.addEventListener('mousemove', doAction);
+            canvas.addEventListener('mouseup', endAction);
+            canvas.addEventListener('mouseout', endAction);
+            canvas.addEventListener('click', handleClick);
+            
+            function startAction(e) {
+                isDrawing = true;
+                startX = e.offsetX;
+                startY = e.offsetY;
+                
+                if (currentTool === 'draw' || currentTool === 'erase') {
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY);
+                    
+                    if (currentTool === 'erase') {
+                        ctx.globalCompositeOperation = 'destination-out';
+                    } else {
+                        ctx.globalCompositeOperation = 'source-over';
+                    }
+                }
+            }
+            
+            function doAction(e) {
+                if (!isDrawing) return;
+                
+                const x = e.offsetX;
+                const y = e.offsetY;
+                
+                if (currentTool === 'draw' || currentTool === 'erase') {
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                    
+                    // Send drawing action to peers
+                    sendDrawingAction({
+                        type: 'draw',
+                        x1: startX,
+                        y1: startY,
+                        x2: x,
+                        y2: y,
+                        color: currentTool === 'erase' ? 'erase' : colorPicker.value,
+                        size: sizeSlider.value
+                    });
+                    
+                    startX = x;
+                    startY = y;
+                }
+            }
+            
+            function endAction() {
+                isDrawing = false;
+            }
+            
+            function handleClick(e) {
+                const x = e.offsetX;
+                const y = e.offsetY;
+                
+                if (currentTool === 'text') {
+                    textInput = prompt('Enter your text:', 'Type here');
+                    if (textInput) {
+                        ctx.font = `${sizeSlider.value * 3}px Arial`;
+                        ctx.fillText(textInput, x, y);
+                        
+                        // Send text action to peers
+                        sendDrawingAction({
+                            type: 'text',
+                            text: textInput,
+                            x: x,
+                            y: y,
+                            size: sizeSlider.value,
+                            color: colorPicker.value
+                        });
+                    }
+                }
+            }
+            
+            // Shape drawing
+            canvas.addEventListener('mousedown', startShape);
+            canvas.addEventListener('mouseup', drawShape);
+            
+            function startShape(e) {
+                if (['rectangle', 'circle', 'line', 'triangle'].includes(currentTool)) {
+                    startX = e.offsetX;
+                    startY = e.offsetY;
+                }
+            }
+            
+            function drawShape(e) {
+                if (!['rectangle', 'circle', 'line', 'triangle'].includes(currentTool)) return;
+                
+                const x = e.offsetX;
+                const y = e.offsetY;
+                
+                ctx.globalCompositeOperation = 'source-over';
+                
+                // Send shape action to peers
+                const shapeAction = {
+                    type: 'shape',
+                    shapeType: currentTool,
+                    x1: startX,
+                    y1: startY,
+                    x2: x,
+                    y2: y,
+                    color: colorPicker.value,
+                    size: sizeSlider.value
+                };
+                
+                switch (currentTool) {
+                    case 'rectangle':
+                        ctx.beginPath();
+                        ctx.rect(startX, startY, x - startX, y - startY);
+                        ctx.stroke();
+                        break;
+                        
+                    case 'circle':
+                        const radius = Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2));
+                        ctx.beginPath();
+                        ctx.arc(startX, startY, radius, 0, Math.PI * 2);
+                        ctx.stroke();
+                        break;
+                        
+                    case 'line':
+                        ctx.beginPath();
+                        ctx.moveTo(startX, startY);
+                        ctx.lineTo(x, y);
+                        ctx.stroke();
+                        break;
+                        
+                    case 'triangle':
+                        ctx.beginPath();
+                        ctx.moveTo(startX, startY);
+                        ctx.lineTo(x, y);
+                        ctx.lineTo(startX * 2 - x, y);
+                        ctx.closePath();
+                        ctx.stroke();
+                        break;
+                }
+                
+                sendDrawingAction(shapeAction);
+                setActiveTool('draw');
+            }
+            
+            // Clear canvas
+            clearBtn.addEventListener('click', function() {
+                if (confirm('Clear the canvas for all connected peers?')) {
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = colorPicker.value;
+                    
+                    // Send clear action to peers
+                    sendDrawingAction({
+                        type: 'clear'
+                    });
+                }
+            });
+            
+            // Color and size changes
+            colorPicker.addEventListener('input', function() {
+                ctx.strokeStyle = this.value;
+                ctx.fillStyle = this.value;
+            });
+            
+            sizeSlider.addEventListener('input', function() {
+                ctx.lineWidth = this.value;
+            });
+        });
+    </script>
+</body>
+</html>
