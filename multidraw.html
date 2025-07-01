@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collaborative Drawing App</title>
+    <style>
+        /* Same styles as before */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        button, select, input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+            cursor: pointer;
+        }
+        button.active {
+            background-color: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+        canvas {
+            border: 1px solid #ddd;
+            background-color: white;
+            cursor: crosshair;
+        }
+        .color-picker {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .users-count {
+            margin-left: auto;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Collaborative Drawing App</h1>
+        
+        <div class="controls">
+            <button id="drawBtn" class="active">Draw</button>
+            <button id="textBtn">Type Text</button>
+            <button id="eraseBtn">Erase</button>
+            
+            <select id="shapeSelect">
+                <option value="">Add Shape...</option>
+                <option value="rectangle">Rectangle</option>
+                <option value="circle">Circle</option>
+                <option value="line">Line</option>
+                <option value="triangle">Triangle</option>
+            </select>
+            
+            <div class="color-picker">
+                <label for="color">Color:</label>
+                <input type="color" id="color" value="#000000">
+            </div>
+            
+            <div class="color-picker">
+                <label for="size">Size:</label>
+                <input type="range" id="size" min="1" max="50" value="5">
+            </div>
+            
+            <button id="clearBtn">Clear Canvas</button>
+            <div class="users-count">Users: <span id="usersCount">1</span></div>
+        </div>
+        
+        <canvas id="drawingCanvas" width="960" height="500"></canvas>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('drawingCanvas');
+            const ctx = canvas.getContext('2d');
+            const socket = io();
+            const usersCount = document.getElementById('usersCount');
+            
+            // Tools and UI elements (same as before)
+            const drawBtn = document.getElementById('drawBtn');
+            const textBtn = document.getElementById('textBtn');
+            const eraseBtn = document.getElementById('eraseBtn');
+            const shapeSelect = document.getElementById('shapeSelect');
+            const colorPicker = document.getElementById('color');
+            const sizeSlider = document.getElementById('size');
+            const clearBtn = document.getElementById('clearBtn');
+            
+            let isDrawing = false;
+            let currentTool = 'draw';
+            let startX, startY;
+            let textInput = '';
+            
+            // Set canvas background to white initially
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Set default drawing styles
+            ctx.strokeStyle = colorPicker.value;
+            ctx.fillStyle = colorPicker.value;
+            ctx.lineWidth = sizeSlider.value;
+            ctx.lineCap = 'round';
+            
+            // Socket.io events
+            socket.on('init', (data) => {
+                // Load existing drawing
+                const img = new Image();
+                img.onload = function() {
+                    ctx.drawImage(img, 0, 0);
+                };
+                img.src = data;
+            });
+            
+            socket.on('drawing', (data) => {
+                // Update canvas with other users' drawings
+                const img = new Image();
+                img.onload = function() {
+                    ctx.drawImage(img, 0, 0);
+                };
+                img.src = data;
+            });
+            
+            socket.on('usersCount', (count) => {
+                usersCount.textContent = count;
+            });
+            
+            // Tools and event listeners (same as before, but modified to emit events)
+            
+            function emitDrawing() {
+                // Send canvas state to server
+                socket.emit('drawing', canvas.toDataURL());
+            }
+            
+            // Modified event handlers to emit after each action
+            function endAction() {
+                isDrawing = false;
+                emitDrawing();
+            }
+            
+            function handleClick(e) {
+                const x = e.offsetX;
+                const y = e.offsetY;
+                
+                if (currentTool === 'text') {
+                    textInput = prompt('Enter your text:', 'Type here');
+                    if (textInput) {
+                        ctx.font = `${sizeSlider.value * 3}px Arial`;
+                        ctx.fillText(textInput, x, y);
+                        emitDrawing();
+                    }
+                }
+            }
+            
+            function drawShape(e) {
+                if (!['rectangle', 'circle', 'line', 'triangle'].includes(currentTool)) return;
+                
+                const x = e.offsetX;
+                const y = e.offsetY;
+                
+                ctx.globalCompositeOperation = 'source-over';
+                
+                switch (currentTool) {
+                    case 'rectangle':
+                        ctx.beginPath();
+                        ctx.rect(startX, startY, x - startX, y - startY);
+                        ctx.stroke();
+                        break;
+                        
+                    case 'circle':
+                        const radius = Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2));
+                        ctx.beginPath();
+                        ctx.arc(startX, startY, radius, 0, Math.PI * 2);
+                        ctx.stroke();
+                        break;
+                        
+                    case 'line':
+                        ctx.beginPath();
+                        ctx.moveTo(startX, startY);
+                        ctx.lineTo(x, y);
+                        ctx.stroke();
+                        break;
+                        
+                    case 'triangle':
+                        ctx.beginPath();
+                        ctx.moveTo(startX, startY);
+                        ctx.lineTo(x, y);
+                        ctx.lineTo(startX * 2 - x, y);
+                        ctx.closePath();
+                        ctx.stroke();
+                        break;
+                }
+                
+                setActiveTool('draw');
+                emitDrawing();
+            }
+            
+            // Clear canvas with confirmation
+            clearBtn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to clear the canvas for everyone?')) {
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = colorPicker.value;
+                    emitDrawing();
+                }
+            });
+            
+            // Rest of the code remains the same as the original version
+            // (tool selection, mouse event handlers, etc.)
+            // Just make sure to call emitDrawing() after any canvas modification
+        });
+    </script>
+</body>
+</html>
