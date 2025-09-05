@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Say an Animal 🐾 → See its Picture</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #111a2b;
+      --text: #e7ecf3;
+      --muted: #9fb0c6;
+      --accent: #7cc4ff;
+      --good: #35d07f;
+      --bad: #ff6b6b;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--text);
+      background: radial-gradient(1200px 800px at 70% -10%, #1a2746 0%, var(--bg) 45%);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    .app {
+      width: min(980px, 100%);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
+      overflow: clip;
+    }
+    header {
+      padding: 20px 24px;
+      display: flex; gap: 16px; align-items: center; justify-content: space-between;
+      background: rgba(255,255,255,0.02);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .title {
+      font-size: clamp(18px, 2.4vw, 24px);
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      display: flex; gap: 10px; align-items: center;
+    }
+    .title small { color: var(--muted); font-weight: 500; }
+
+    .controls {
+      display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    }
+    .btn {
+      appearance: none; border: 0; cursor: pointer;
+      padding: 12px 16px; border-radius: 12px; font-weight: 700;
+      color: var(--text); background: #1b2947; border: 1px solid rgba(255,255,255,0.08);
+      display: inline-flex; align-items: center; gap: 10px;
+      transition: transform .06s ease, box-shadow .2s ease, background .2s ease;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn:active { transform: translateY(0); }
+    .btn[disabled] { opacity: .6; cursor: not-allowed; }
+
+    .mic-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--muted); box-shadow: 0 0 0 0 rgba(124,196,255,0.6); }
+    .mic-dot.live { background: var(--good); animation: pulse 1.2s infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(53,208,127,0.6);} 70%{ box-shadow:0 0 0 12px rgba(53,208,127,0);} 100%{ box-shadow:0 0 0 0 rgba(53,208,127,0);} }
+
+    .transcript {
+      margin: 12px 24px 0; padding: 10px 14px; border-radius: 12px;
+      background: #0f1729; color: var(--muted); font-size: 14px; min-height: 22px;
+      border: 1px dashed rgba(255,255,255,0.12);
+    }
+
+    main { display: grid; gap: 18px; padding: 18px; }
+    .stage {
+      position: relative; min-height: 340px; display: grid; place-items: center;
+      background: repeating-conic-gradient(from 0deg, #0e1526 0deg 30deg, #10182b 30deg 60deg);
+      border-radius: 16px; border: 1px solid rgba(255,255,255,0.06);
+      overflow: hidden;
+    }
+    .stage::after {
+      content: ""; position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(800px 220px at 50% 110%, rgba(124,196,255,0.15), transparent 60%);
+    }
+    .hint { position: absolute; bottom: 14px; color: var(--muted); font-size: 13px; }
+
+    .animal-card {
+      position: relative; display: grid; place-items: center; padding: 10px 16px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px; min-width: 220px;
+      transform: translateY(18px) scale(0.9);
+      opacity: 0; pointer-events: none; filter: drop-shadow(0 12px 18px rgba(0,0,0,0.35));
+    }
+    .animal-card.visible { animation: popUp 500ms cubic-bezier(.2,1.6,.2,1) forwards; }
+    @keyframes popUp {
+      0% { opacity: 0; transform: translateY(40px) scale(.6) rotate(-4deg); }
+      60% { opacity: 1; transform: translateY(-6px) scale(1.05) rotate(1deg); }
+      100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+    }
+    .animal-card img { max-width: min(60vmin, 420px); max-height: 320px; width: auto; height: auto; border-radius: 12px; }
+    .animal-name { margin-top: 8px; font-weight: 800; letter-spacing: .5px; }
+
+    .grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px;
+      background: rgba(255,255,255,0.02); padding: 12px; border: 1px solid rgba(255,255,255,0.06); border-radius: 14px;
+    }
+    .tile { background: #0f182a; border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 8px; text-align: center; cursor: pointer; transition: transform .08s ease; }
+    .tile:hover { transform: translateY(-2px); }
+    .tile small { color: var(--muted); display: block; margin-top: 6px; font-size: 12px; letter-spacing: .3px; }
+
+    .status { padding: 10px 14px; border-radius: 12px; font-size: 14px; margin: 0 24px 12px; }
+    .status.ok { background: rgba(53,208,127,0.1); border: 1px solid rgba(53,208,127,0.35); }
+    .status.err { background: rgba(255,107,107,0.08); border: 1px solid rgba(255,107,107,0.35); }
+    .status.muted { background: rgba(255,255,255,0.04); border: 1px dashed rgba(255,255,255,0.12); color: var(--muted); }
+    footer { padding: 12px 18px 18px; color: var(--muted); font-size: 12px; text-align: center; }
+    code { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="app" role="application" aria-label="Say an animal to see its picture">
+    <header>
+      <div class="title">🐾 Say an animal <small>→ picture jumps out</small></div>
+      <div class="controls">
+        <button id="startBtn" class="btn" aria-label="Start listening">
+          <span class="mic-dot" id="micDot" aria-hidden="true"></span>
+          <span id="btnLabel">Start Listening</span>
+        </button>
+        <button id="stopBtn" class="btn" aria-label="Stop listening" disabled>Stop</button>
+        <input id="textInput" placeholder="…or type an animal here" class="btn" style="padding:12px 14px; font-weight:600; min-width: 220px;" />
+        <button id="showBtn" class="btn" aria-label="Show typed animal">Show</button>
+      </div>
+    </header>
+
+    <div id="transcript" class="transcript" aria-live="polite"></div>
+
+    <main>
+      <section class="stage" aria-live="polite">
+        <div id="card" class="animal-card" aria-hidden="true">
+          <img id="animalImg" alt="" />
+          <div id="animalName" class="animal-name"></div>
+        </div>
+        <div class="hint">Try saying: <em>cat</em>, <em>dog</em>, <em>elephant</em>…</div>
+      </section>
+
+      <section>
+        <div class="grid" id="grid"></div>
+      </section>
+    </main>
+
+    <div id="status" class="status muted" role="status">Ready. Click <strong>Start Listening</strong> and say an animal (English).
+    </div>
+    <footer>
+      Place image files in the <code>./</code> folder next to this HTML (e.g., <code>cat.png</code>, <code>pig.jpg</code>). Works best in Chrome/Edge using the Web Speech API.
+    </footer>
+  </div>
+
+  <script>
+    // --- Image list provided by you ---
+    const animals = {
+      cat: 'cat.png',
+      dog: 'dog.png',
+      pig: 'pig.jpg',
+      snake: 'snake.png',
+      dino: 'dino.png',
+      crocodile: 'crocodile.png',
+      bat: 'bat.png',
+      horse: 'horse.png',
+      duck: 'duck.png',
+      chicken: 'chicken.png',
+      shark: 'shark.png',
+      monkey: 'monkey.png',
+      fish: 'fish.png',
+      cow: 'cow.png',
+      elephant: 'elephant.png',
+      bear: 'bear.png',
+      bee: 'bee.png',
+      bunny: 'bunny.png',
+      mouse: 'mouse.jpg',
+      rhino: 'rhino.jpg'
+    };
+
+    // Optional aliases (plural forms / common sayings)
+    const aliases = {
+      cats: 'cat',
+      doggy: 'dog', dogs: 'dog',
+      pigs: 'pig',
+      snakes: 'snake',
+      dinosaurs: 'dino', dinosaur: 'dino', dino: 'dino',
+      crocodiles: 'crocodile', croc: 'crocodile',
+      bats: 'bat',
+      horses: 'horse',
+      ducks: 'duck',
+      chickens: 'chicken',
+      sharks: 'shark',
+      monkeys: 'monkey',
+      fishes: 'fish', fishs: 'fish',
+      cows: 'cow',
+      elephants: 'elephant',
+      bears: 'bear',
+      bees: 'bee',
+      bunnies: 'bunny', rabbits: 'bunny', rabbit: 'bunny',
+      mice: 'mouse',
+      rhinoceros: 'rhino', rhinoceroses: 'rhino', rhinos: 'rhino'
+    };
+
+    // --- UI Elements ---
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const btnLabel = document.getElementById('btnLabel');
+    const micDot = document.getElementById('micDot');
+    const transcriptEl = document.getElementById('transcript');
+    const statusEl = document.getElementById('status');
+    const card = document.getElementById('card');
+    const img = document.getElementById('animalImg');
+    const nameEl = document.getElementById('animalName');
+    const grid = document.getElementById('grid');
+    const textInput = document.getElementById('textInput');
+    const showBtn = document.getElementById('showBtn');
+
+    // Build quick-click tiles for each animal
+    Object.entries(animals).forEach(([key, src]) => {
+      const tile = document.createElement('button');
+      tile.className = 'tile';
+      tile.innerHTML = `<strong>${key}</strong><small>click to show</small>`;
+      tile.addEventListener('click', () => showAnimal(key));
+      grid.appendChild(tile);
+    });
+
+    // Preload images for snappy display
+    const preload = Object.values(animals).map(path => { const i = new Image(); i.src = path; return i; });
+
+    function normalize(word) {
+      if (!word) return '';
+      const cleaned = word.toLowerCase().replace(/[^a-z]/g, '');
+      return aliases[cleaned] || cleaned;
+    }
+
+    function findAnimalIn(text) {
+      const words = String(text || '').toLowerCase().split(/\s+/).map(w => normalize(w));
+      for (const w of words) {
+        if (animals[w]) return w;
+      }
+      return null;
+    }
+
+    function showStatus(msg, type = 'muted') {
+      statusEl.className = `status ${type}`;
+      statusEl.innerHTML = msg;
+    }
+
+    function showAnimal(key) {
+      const src = animals[key];
+      if (!src) {
+        showStatus(`I couldn't find an image for <strong>${key}</strong>. Try another animal.`, 'err');
+        return;
+      }
+      img.src = src;
+      img.alt = key;
+      nameEl.textContent = key;
+      card.classList.remove('visible');
+      // Force reflow to restart animation
+      void card.offsetWidth;
+      card.classList.add('visible');
+      card.setAttribute('aria-hidden', 'false');
+      showStatus(`Showing: <strong>${key}</strong>`, 'ok');
+    }
+
+    // --- Text input fallback ---
+    showBtn.addEventListener('click', () => {
+      const key = normalize(textInput.value.trim());
+      if (key) showAnimal(key); else showStatus('Type an animal name first.', 'err');
+    });
+    textInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') showBtn.click();
+    });
+
+    // --- Speech Recognition (Web Speech API) ---
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition = null;
+
+    if (!SpeechRecognition) {
+      showStatus('Speech recognition is not supported in this browser. Use the text box or try Chrome/Edge.', 'err');
+      startBtn.disabled = true;
+      stopBtn.disabled = true;
+    } else {
+      recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.continuous = true; // keep listening until stopped
+      recognition.interimResults = true;
+
+      recognition.onstart = () => {
+        micDot.classList.add('live');
+        btnLabel.textContent = 'Listening…';
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+        showStatus('Listening… Say an animal name (e.g., “cat”, “elephant”).', 'muted');
+      };
+
+      recognition.onend = () => {
+        micDot.classList.remove('live');
+        btnLabel.textContent = 'Start Listening';
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+        showStatus('Stopped listening. Click start to listen again.', 'muted');
+      };
+
+      recognition.onerror = (e) => {
+        showStatus(`Mic error: <strong>${e.error}</strong>. Check permissions or try again.`, 'err');
+      };
+
+      recognition.onresult = (event) => {
+        let finalTranscript = '';
+        let interimTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const res = event.results[i];
+          if (res.isFinal) finalTranscript += res[0].transcript + ' ';
+          else interimTranscript += res[0].transcript + ' ';
+        }
+        transcriptEl.textContent = (finalTranscript || interimTranscript).trim();
+
+        const guess = findAnimalIn(finalTranscript || interimTranscript);
+        if (guess) {
+          showAnimal(guess);
+        }
+      };
+
+      startBtn.addEventListener('click', () => {
+        try { recognition.start(); } catch (_) { /* already started */ }
+      });
+      stopBtn.addEventListener('click', () => recognition.stop());
+    }
+  </script>
+</body>
+</html>
