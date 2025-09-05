@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice-Activated Animal Showcase</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #fff;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            width: 100%;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .voice-controls {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 20px;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+        
+        .mic-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .mic-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .mic-btn.listening {
+            background: linear-gradient(135deg, #00b09b, #96c93d);
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .status {
+            font-size: 1.2rem;
+            margin: 15px 0;
+            min-height: 30px;
+        }
+        
+        .animal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+        
+        .animal-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 10px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .animal-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-5px);
+        }
+        
+        .animal-item img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-bottom: 8px;
+        }
+        
+        .result {
+            width: 100%;
+            text-align: center;
+        }
+        
+        .animal-display {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transition: all 0.5s ease;
+        }
+        
+        .animal-display img {
+            max-width: 300px;
+            max-height: 300px;
+            border-radius: 15px;
+            margin: 15px 0;
+            border: 5px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .animal-display img:hover {
+            transform: scale(1.05);
+        }
+        
+        .animal-name {
+            font-size: 2rem;
+            margin: 10px 0;
+            text-transform: capitalize;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .instructions {
+            margin-top: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            width: 100%;
+            max-width: 600px;
+        }
+        
+        .instructions h2 {
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .instructions ul {
+            list-style-position: inside;
+            text-align: left;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .animal-grid {
+                grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            }
+            
+            .animal-item img {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .animal-display img {
+                max-width: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Voice-Activated Animal Showcase</h1>
+        <p class="subtitle">Say the name of an animal and watch it appear! Try saying "cat", "dog", or any other animal from the list.</p>
+    </header>
+    
+    <div class="container">
+        <div class="voice-controls">
+            <button class="mic-btn" id="micButton">🎤</button>
+            <div class="status" id="status">Press the microphone to start</div>
+        </div>
+        
+        <div class="animal-grid" id="animalGrid">
+            <!-- Animal grid will be populated by JavaScript -->
+        </div>
+        
+        <div class="result">
+            <div class="animal-display" id="animalDisplay">
+                <p>Your animal will appear here</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="instructions">
+        <h2>How to Use</h2>
+        <ul>
+            <li>Click the microphone button</li>
+            <li>Allow microphone permissions if prompted</li>
+            <li>Say the name of an animal clearly</li>
+            <li>See the animal picture appear!</li>
+            <li>You can also click on any animal below to see it</li>
+        </ul>
+    </div>
+
+    <script>
+        // Animal data with image URLs
+        const animals = {
+            cat: 'cat.png',
+            dog: 'dog.png',
+            pig: 'pig.jpg',
+            snake: 'snake.png',
+            dino: 'dino.png',
+            crocodile: 'crocodile.png',
+            bat: 'bat.png',
+            horse: 'horse.png',
+            duck: 'duck.png',
+            chicken: 'chicken.png',
+            shark: 'shark.png',
+            monkey: 'monkey.png',
+            fish: 'fish.png',
+            cow: 'cow.png',
+            elephant: 'elephant.png',
+            bear: 'bear.png',
+            bee: 'bee.png',
+            bunny: 'bunny.png',
+            mouse: 'mouse.jpg',
+            rhino: 'rhino.jpg'
+        };
+
+        // DOM elements
+        const micButton = document.getElementById('micButton');
+        const statusElement = document.getElementById('status');
+        const animalGrid = document.getElementById('animalGrid');
+        const animalDisplay = document.getElementById('animalDisplay');
+
+        // Check if browser supports SpeechRecognition
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            statusElement.textContent = "Speech recognition is not supported in this browser. Try Chrome or Edge.";
+            micButton.disabled = true;
+        } else {
+            const recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            // Event handlers for speech recognition
+            recognition.onstart = () => {
+                micButton.classList.add('listening');
+                statusElement.textContent = "Listening... Say an animal name";
+            };
+
+            recognition.onresult = (event) => {
+                const spokenWord = event.results[0][0].transcript.toLowerCase().trim();
+                statusElement.textContent = `Heard: "${spokenWord}"`;
+                
+                // Check if the spoken word matches any animal
+                if (animals.hasOwnProperty(spokenWord)) {
+                    showAnimal(spokenWord);
+                } else {
+                    statusElement.textContent = `Sorry, I didn't recognize "${spokenWord}" as an animal. Try again.`;
+                }
+            };
+
+            recognition.onerror = (event) => {
+                micButton.classList.remove('listening');
+                statusElement.textContent = `Error: ${event.error}`;
+            };
+
+            recognition.onend = () => {
+                micButton.classList.remove('listening');
+            };
+
+            // Button click event
+            micButton.addEventListener('click', () => {
+                if (micButton.classList.contains('listening')) {
+                    recognition.stop();
+                } else {
+                    recognition.start();
+                }
+            });
+        }
+
+        // Function to display the animal
+        function showAnimal(animal) {
+            animalDisplay.innerHTML = `
+                <h2 class="animal-name">${animal}</h2>
+                <img src="${animals[animal]}" alt="${animal}">
+                <p>You said: "${animal}"</p>
+            `;
+            
+            // Scroll to the result
+            animalDisplay.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Create animal grid
+        function createAnimalGrid() {
+            for (const animal in animals) {
+                const animalItem = document.createElement('div');
+                animalItem.className = 'animal-item';
+                animalItem.innerHTML = `
+                    <img src="${animals[animal]}" alt="${animal}">
+                    <div>${animal}</div>
+                `;
+                animalItem.addEventListener('click', () => {
+                    showAnimal(animal);
+                    statusElement.textContent = `Selected: ${animal}`;
+                });
+                animalGrid.appendChild(animalItem);
+            }
+        }
+
+        // Initialize the page
+        createAnimalGrid();
+    </script>
+</body>
+</html>
