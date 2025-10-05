@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Bonds Learning Tool</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+        }
+        
+        body {
+            background-color: #f0f9ff;
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2.2rem;
+        }
+        
+        .description {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #34495e;
+            font-size: 1.1rem;
+            line-height: 1.5;
+        }
+        
+        .input-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .input-field {
+            padding: 10px;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            width: 100px;
+            text-align: center;
+        }
+        
+        .operation-select {
+            padding: 10px;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            background-color: white;
+        }
+        
+        .calculate-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .calculate-btn:hover {
+            background-color: #2980b9;
+            transform: scale(1.05);
+        }
+        
+        .visualization {
+            margin: 0 auto 25px;
+            width: 500px;
+            border: 2px solid #2c3e50;
+            border-radius: 5px;
+            overflow: hidden;
+            background-color: #f8f9fa;
+        }
+        
+        .row {
+            display: flex;
+            height: 30px;
+        }
+        
+        .square {
+            width: 50px; /* Fixed width */
+            height: 30px; /* Fixed height */
+            border: 1px solid #ddd;
+            margin: 0;
+            transition: background-color 0.3s;
+        }
+        
+        .blue {
+            background-color: #3498db;
+        }
+        
+        .red {
+            background-color: #e74c3c;
+        }
+        
+        .empty {
+            background-color: #f8f9fa;
+        }
+        
+        .explanation {
+            font-size: 1.3rem;
+            text-align: center;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        
+        .highlight {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .examples {
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .examples h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .example-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .example-btn {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .example-btn:hover {
+            background-color: #27ae60;
+            transform: scale(1.05);
+        }
+        
+        @media (max-width: 600px) {
+            .visualization {
+                width: 300px;
+            }
+            
+            .square {
+                width: 30px;
+            }
+            
+            .input-field {
+                width: 80px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Number Bonds Learning Tool</h1>
+    
+    <div class="description">
+        <p>Enter numbers to see how they bond together visually.</p>
+        <p>Blue squares show the first number, red squares show the second number.</p>
+        <p>Empty squares show unused space.</p>
+    </div>
+    
+    <div class="input-section">
+        <div class="input-group">
+            <input type="number" id="num1" class="input-field" min="1" max="100" placeholder="Number">
+            <select id="operation" class="operation-select">
+                <option value="+">+</option>
+                <option value="-">-</option>
+            </select>
+            <input type="number" id="num2" class="input-field" min="1" max="100" placeholder="Number">
+            <span>=</span>
+            <input type="number" id="result" class="input-field" placeholder="Result" readonly>
+        </div>
+        <div class="input-group">
+            <button id="calculate" class="calculate-btn">Show Visualization</button>
+        </div>
+    </div>
+    
+    <div class="visualization" id="visualization">
+        <!-- Rows will be generated by JavaScript -->
+    </div>
+    
+    <div class="explanation" id="explanation">
+        Enter numbers and click "Show Visualization" to see the number bonds!
+    </div>
+    
+    <div class="examples">
+        <h3>Try These Examples:</h3>
+        <div class="example-buttons" id="example-buttons">
+            <!-- Example buttons will be generated by JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const num1Input = document.getElementById('num1');
+            const num2Input = document.getElementById('num2');
+            const resultInput = document.getElementById('result');
+            const operationSelect = document.getElementById('operation');
+            const calculateBtn = document.getElementById('calculate');
+            const visualization = document.getElementById('visualization');
+            const explanation = document.getElementById('explanation');
+            const exampleButtons = document.getElementById('example-buttons');
+            
+            // Create example buttons
+            const examples = [
+                { num1: 35, operation: '+', num2: 65 },
+                { num1: 65, operation: '-', num2: 20 },
+                { num1: 50, operation: '+', num2: 50 },
+                { num1: 100, operation: '-', num2: 75 },
+                { num1: 25, operation: '+', num2: 75 },
+                { num1: 90, operation: '-', num2: 45 },
+                { num1: 65, operation: '+', num2: 1 }
+            ];
+            
+            examples.forEach(example => {
+                const button = document.createElement('button');
+                button.className = 'example-btn';
+                button.textContent = `${example.num1} ${example.operation} ${example.num2}`;
+                button.addEventListener('click', function() {
+                    num1Input.value = example.num1;
+                    operationSelect.value = example.operation;
+                    num2Input.value = example.num2;
+                    calculateResult();
+                    updateVisualization();
+                });
+                exampleButtons.appendChild(button);
+            });
+            
+            // Calculate result when inputs change
+            num1Input.addEventListener('input', calculateResult);
+            num2Input.addEventListener('input', calculateResult);
+            operationSelect.addEventListener('change', calculateResult);
+            
+            function calculateResult() {
+                const num1 = parseInt(num1Input.value) || 0;
+                const num2 = parseInt(num2Input.value) || 0;
+                const operation = operationSelect.value;
+                
+                if (operation === '+') {
+                    resultInput.value = num1 + num2;
+                } else {
+                    resultInput.value = num1 - num2;
+                }
+            }
+            
+            // Update visualization when calculate button is clicked
+            calculateBtn.addEventListener('click', updateVisualization);
+            
+            function updateVisualization() {
+                const num1 = parseInt(num1Input.value) || 0;
+                const num2 = parseInt(num2Input.value) || 0;
+                const operation = operationSelect.value;
+                const result = parseInt(resultInput.value) || 0;
+                
+                // Validate inputs
+                if (num1 < 1 || num2 < 1 || result < 1 || result > 100) {
+                    explanation.textContent = "Please enter valid numbers between 1 and 100.";
+                    visualization.innerHTML = '';
+                    return;
+                }
+                
+                // Determine blue and red counts based on operation
+                let blueCount, redCount;
+                
+                if (operation === '+') {
+                    blueCount = num1;
+                    redCount = num2;
+                } else {
+                    blueCount = result;
+                    redCount = num2;
+                }
+                
+                // Clear previous visualization
+                visualization.innerHTML = '';
+                
+                // Calculate how many rows we need (each row has exactly 10 squares)
+                const totalSquares = blueCount + redCount;
+                const rowsNeeded = Math.ceil(totalSquares / 10);
+                
+                // Create rows and squares
+                let blueRemaining = blueCount;
+                let redRemaining = redCount;
+                
+                for (let row = 0; row < rowsNeeded; row++) {
+                    const rowElement = document.createElement('div');
+                    rowElement.className = 'row';
+                    
+                    // Always create exactly 10 squares per row
+                    for (let i = 0; i < 10; i++) {
+                        const square = document.createElement('div');
+                        square.className = 'square';
+                        
+                        const squareIndex = (row * 10) + i;
+                        
+                        // Color the square based on remaining counts
+                        if (squareIndex < totalSquares) {
+                            if (blueRemaining > 0) {
+                                square.classList.add('blue');
+                                blueRemaining--;
+                            } else if (redRemaining > 0) {
+                                square.classList.add('red');
+                                redRemaining--;
+                            }
+                        } else {
+                            // Empty square for unused space
+                            square.classList.add('empty');
+                        }
+                        
+                        rowElement.appendChild(square);
+                    }
+                    
+                    visualization.appendChild(rowElement);
+                }
+                
+                // Update explanation text
+                if (operation === '+') {
+                    explanation.innerHTML = `${num1} + ${num2} = ${result}. There are <span class="highlight">${blueCount}</span> blue squares and <span class="highlight">${redCount}</span> red squares.`;
+                } else {
+                    explanation.innerHTML = `${num1} - ${num2} = ${result}. There are <span class="highlight">${blueCount}</span> blue squares and <span class="highlight">${redCount}</span> red squares.`;
+                }
+            }
+            
+            // Initialize with an example
+            num1Input.value = 35;
+            operationSelect.value = '+';
+            num2Input.value = 65;
+            calculateResult();
+            updateVisualization();
+        });
+    </script>
+</body>
+</html>
