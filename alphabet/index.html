@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alphabet Pronunciation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        .alphabet-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .letter-button {
+            padding: 15px 20px;
+            font-size: 24px;
+            cursor: pointer;
+            border: 2px solid #007bff;
+            background-color: #e9f5ff;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+            user-select: none; /* Ngăn chặn chọn văn bản */
+        }
+        .letter-button:hover {
+            background-color: #cce5ff;
+        }
+        .letter-button:active {
+            background-color: #0056b3;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>English Alphabet Pronouncer</h1>
+    <p>Click on any letter to hear its pronunciation.</p>
+
+    <div class="alphabet-container" id="alphabetContainer">
+        <!-- Các nút chữ cái sẽ được chèn vào đây bằng JavaScript -->
+    </div>
+
+    <script>
+        // Từ vựng mới:
+        // - Pronounce (v): phát âm
+        // - Container (n): thùng chứa, nơi chứa
+        // - Click (v): nhấp chuột
+
+        // Phân tích ngữ pháp:
+        // Đoạn mã này sử dụng JavaScript để thao tác với DOM (Document Object Model) của trang web.
+        // 1. Lấy đối tượng container: document.getElementById('alphabetContainer')
+        // 2. Tạo chuỗi các chữ cái: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        // 3. Lặp qua từng chữ cái (for...of loop)
+        // 4. Tạo phần tử nút (button) mới: document.createElement('button')
+        // 5. Gán nội dung (chữ cái) và class cho nút.
+        // 6. Gán hàm lắng nghe sự kiện nhấp chuột (addEventListener('click', ...))
+        // 7. Thêm nút vào container: container.appendChild(button)
+
+        const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const container = document.getElementById('alphabetContainer');
+
+        // Hàm để phát âm chữ cái
+        function speakLetter(letter) {
+            // Kiểm tra xem trình duyệt có hỗ trợ Web Speech API không
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(letter);
+                // Bạn có thể thiết lập ngôn ngữ nếu cần, ví dụ: 'en-US'
+                utterance.lang = 'en-US'; 
+                utterance.rate = 1.0; // Tốc độ bình thường
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert("Xin lỗi, trình duyệt của bạn không hỗ trợ tính năng chuyển văn bản thành giọng nói (Text-to-Speech).");
+            }
+        }
+
+        // Tạo và thêm các nút chữ cái vào container
+        for (const letter of alphabet) {
+            const button = document.createElement('button');
+            button.textContent = letter;
+            button.className = 'letter-button';
+            
+            // Gán sự kiện click
+            button.addEventListener('click', function() {
+                speakLetter(letter);
+            });
+
+            container.appendChild(button);
+        }
+    </script>
+
+</body>
+</html>
