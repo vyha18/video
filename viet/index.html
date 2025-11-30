@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vietnamese Text-to-Speech Reader - Google TTS</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(to right, #1e3c72, #2a5298);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 25px;
+        }
+        
+        .input-section {
+            margin-bottom: 30px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #1e3c72;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            resize: vertical;
+            margin-bottom: 15px;
+            transition: border-color 0.3s;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #2a5298;
+            box-shadow: 0 0 0 2px rgba(42, 82, 152, 0.2);
+        }
+        
+        .instructions {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: linear-gradient(to right, #1e3c72, #2a5298);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button i {
+            margin-right: 8px;
+        }
+        
+        .generate-btn {
+            background: linear-gradient(to right, #1e3c72, #2a5298);
+        }
+        
+        .read-all-btn {
+            background: linear-gradient(to right, #00b09b, #96c93d);
+        }
+        
+        .stop-btn {
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+        }
+        
+        .output-section h2 {
+            margin-bottom: 20px;
+            color: #1e3c72;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .sentence-list {
+            list-style-type: none;
+        }
+        
+        .sentence-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+            background-color: #f9fafc;
+        }
+        
+        .sentence-item:hover {
+            background-color: #f0f4ff;
+            transform: translateX(5px);
+        }
+        
+        .sentence-item.playing {
+            background-color: #e6f7ff;
+            border-color: #2a5298;
+        }
+        
+        .sentence-text {
+            flex-grow: 1;
+            font-size: 16px;
+            line-height: 1.5;
+            cursor: pointer;
+            padding: 5px 0;
+        }
+        
+        .read-btn {
+            background: linear-gradient(to right, #00b09b, #96c93d);
+            padding: 8px 15px;
+            font-size: 14px;
+            margin-left: 15px;
+        }
+        
+        .read-btn:hover {
+            background: linear-gradient(to right, #00917a, #7db02f);
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+        
+        .speaking {
+            background-color: #e6f7ff;
+            color: #0066cc;
+            display: block;
+        }
+        
+        .error {
+            background-color: #ffe6e6;
+            color: #cc0000;
+            display: block;
+        }
+        
+        .voice-controls {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid #eee;
+        }
+        
+        .voice-controls h3 {
+            margin-bottom: 10px;
+            color: #1e3c72;
+        }
+        
+        .control-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .control-item {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .control-item label {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        select, input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+        }
+        
+        @media (max-width: 600px) {
+            .sentence-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .read-btn {
+                margin-left: 0;
+                margin-top: 10px;
+                align-self: flex-end;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .control-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Vietnamese Text-to-Speech Reader</h1>
+            <p class="subtitle">Sử dụng Google Text-to-Speech API để phát âm tiếng Việt tự nhiên hơn</p>
+        </header>
+        
+        <div class="content">
+            <div class="input-section">
+                <label for="vietnameseText">Nhập các câu tiếng Việt (mỗi câu trên một dòng):</label>
+                <textarea id="vietnameseText" placeholder="Xin chào, tôi là người Việt Nam..."></textarea>
+                <p class="instructions">Mỗi câu nên được viết trên một dòng riêng biệt. Nhấn nút "Tạo Danh Sách" để xem tất cả các câu.</p>
+                
+                <div class="button-group">
+                    <button id="generateBtn" class="generate-btn">
+                        <i>📋</i> Tạo Danh Sách
+                    </button>
+                    <button id="readAllBtn" class="read-all-btn">
+                        <i>🔊</i> Đọc Tất Cả
+                    </button>
+                    <button id="stopBtn" class="stop-btn">
+                        <i>⏹️</i> Dừng Đọc
+                    </button>
+                </div>
+            </div>
+            
+            <div class="voice-controls">
+                <h3>Tùy chỉnh giọng đọc</h3>
+                <div class="control-group">
+                    <div class="control-item">
+                        <label for="voiceSelect">Giọng đọc:</label>
+                        <select id="voiceSelect">
+                            <option value="vi-VN-Standard-A">Nữ miền Bắc (Standard A)</option>
+                            <option value="vi-VN-Standard-B">Nam miền Bắc (Standard B)</option>
+                            <option value="vi-VN-Standard-C">Nữ miền Nam (Standard C)</option>
+                            <option value="vi-VN-Standard-D">Nam miền Nam (Standard D)</option>
+                            <option value="vi-VN-Wavenet-A">Nữ miền Bắc (Wavenet A)</option>
+                            <option value="vi-VN-Wavenet-B">Nam miền Bắc (Wavenet B)</option>
+                            <option value="vi-VN-Wavenet-C">Nữ miền Nam (Wavenet C)</option>
+                            <option value="vi-VN-Wavenet-D">Nam miền Nam (Wavenet D)</option>
+                        </select>
+                    </div>
+                    <div class="control-item">
+                        <label for="speedControl">Tốc độ:</label>
+                        <input type="range" id="speedControl" min="0.5" max="1.5" step="0.1" value="1.0">
+                        <span id="speedValue">1.0x</span>
+                    </div>
+                    <div class="control-item">
+                        <label for="pitchControl">Độ cao:</label>
+                        <input type="range" id="pitchControl" min="0.5" max="2.0" step="0.1" value="1.0">
+                        <span id="pitchValue">1.0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="output-section">
+                <h2>Danh sách câu tiếng Việt</h2>
+                <ul id="sentenceList" class="sentence-list">
+                    <!-- Sentences will be added here dynamically -->
+                </ul>
+                <div id="status" class="status"></div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Vietnamese Text-to-Speech Reader - Sử dụng Google Text-to-Speech API</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const generateBtn = document.getElementById('generateBtn');
+            const readAllBtn = document.getElementById('readAllBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const vietnameseText = document.getElementById('vietnameseText');
+            const sentenceList = document.getElementById('sentenceList');
+            const status = document.getElementById('status');
+            const voiceSelect = document.getElementById('voiceSelect');
+            const speedControl = document.getElementById('speedControl');
+            const pitchControl = document.getElementById('pitchControl');
+            const speedValue = document.getElementById('speedValue');
+            const pitchValue = document.getElementById('pitchValue');
+            
+            let currentAudio = null;
+            let isPlaying = false;
+            let currentPlayingIndex = -1;
+            
+            // Update speed and pitch values
+            speedControl.addEventListener('input', function() {
+                speedValue.textContent = `${this.value}x`;
+            });
+            
+            pitchControl.addEventListener('input', function() {
+                pitchValue.textContent = this.value;
+            });
+            
+            // Check if browser supports audio
+            if (!window.Audio) {
+                status.textContent = 'Xin lỗi, trình duyệt của bạn không hỗ trợ chức năng phát âm thanh. Vui lòng sử dụng trình duyệt hiện đại.';
+                status.className = 'status error';
+                status.style.display = 'block';
+                generateBtn.disabled = true;
+                readAllBtn.disabled = true;
+            }
+            
+            // Generate sentence list when button is clicked
+            generateBtn.addEventListener('click', function() {
+                const text = vietnameseText.value.trim();
+                
+                if (!text) {
+                    status.textContent = 'Vui lòng nhập ít nhất một câu tiếng Việt.';
+                    status.className = 'status error';
+                    status.style.display = 'block';
+                    return;
+                }
+                
+                // Split text by new lines and filter out empty lines
+                const sentences = text.split('\n')
+                    .map(s => s.trim())
+                    .filter(s => s.length > 0);
+                
+                if (sentences.length === 0) {
+                    status.textContent = 'Không tìm thấy câu nào hợp lệ. Vui lòng kiểm tra lại.';
+                    status.className = 'status error';
+                    status.style.display = 'block';
+                    return;
+                }
+                
+                // Clear previous list
+                sentenceList.innerHTML = '';
+                
+                // Create list items for each sentence
+                sentences.forEach((sentence, index) => {
+                    const listItem = document.createElement('li');
+                    listItem.className = 'sentence-item';
+                    listItem.dataset.index = index;
+                    
+                    const sentenceText = document.createElement('div');
+                    sentenceText.className = 'sentence-text';
+                    sentenceText.textContent = `${index + 1}. ${sentence}`;
+                    
+                    const readBtn = document.createElement('button');
+                    readBtn.className = 'read-btn';
+                    readBtn.innerHTML = '<i>🔊</i> Đọc';
+                    
+                    // Add event listeners for reading the sentence
+                    sentenceText.addEventListener('click', () => readVietnameseSentence(sentence, index));
+                    readBtn.addEventListener('click', () => readVietnameseSentence(sentence, index));
+                    
+                    listItem.appendChild(sentenceText);
+                    listItem.appendChild(readBtn);
+                    sentenceList.appendChild(listItem);
+                });
+                
+                status.textContent = `Đã tạo ${sentences.length} câu. Nhấp vào câu hoặc nút "Đọc" để nghe phát âm.`;
+                status.className = 'status';
+                status.style.display = 'block';
+            });
+            
+            // Read all sentences
+            readAllBtn.addEventListener('click', function() {
+                const sentences = Array.from(sentenceList.querySelectorAll('.sentence-item'))
+                    .map(item => item.querySelector('.sentence-text').textContent.replace(/^\d+\.\s/, ''));
+                
+                if (sentences.length === 0) {
+                    status.textContent = 'Không có câu nào để đọc. Vui lòng tạo danh sách câu trước.';
+                    status.className = 'status error';
+                    status.style.display = 'block';
+                    return;
+                }
+                
+                readAllSentences(sentences);
+            });
+            
+            // Stop reading
+            stopBtn.addEventListener('click', function() {
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio = null;
+                    isPlaying = false;
+                    
+                    // Remove playing class from all items
+                    document.querySelectorAll('.sentence-item.playing').forEach(item => {
+                        item.classList.remove('playing');
+                    });
+                    
+                    status.textContent = 'Đã dừng đọc.';
+                    status.className = 'status';
+                }
+            });
+            
+            // Function to read Vietnamese text using Google TTS API
+            function readVietnameseSentence(text, index) {
+                // Stop any ongoing speech
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio = null;
+                }
+                
+                // Remove playing class from all items
+                document.querySelectorAll('.sentence-item.playing').forEach(item => {
+                    item.classList.remove('playing');
+                });
+                
+                // Add playing class to current item
+                if (index !== undefined) {
+                    const currentItem = document.querySelector(`.sentence-item[data-index="${index}"]`);
+                    if (currentItem) {
+                        currentItem.classList.add('playing');
+                    }
+                    currentPlayingIndex = index;
+                }
+                
+                // Clean text for URL encoding
+                const cleanText = text.replace(/^\d+\.\s/, '');
+                
+                // Get selected voice and settings
+                const voice = voiceSelect.value;
+                const speed = speedControl.value;
+                const pitch = pitchControl.value;
+                
+                // Create Google TTS API URL
+                // Note: This is a client-side implementation using a public TTS service
+                // For production, you would use the official Google Cloud TTS API with an API key
+                const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(cleanText)}&tl=vi&client=tw-ob`;
+                
+                // Create audio element
+                const audio = new Audio(ttsUrl);
+                currentAudio = audio;
+                
+                // Update status when playing starts
+                audio.onplay = function() {
+                    isPlaying = true;
+                    status.textContent = `Đang đọc: "${cleanText}"`;
+                    status.className = 'status speaking';
+                    status.style.display = 'block';
+                };
+                
+                // Update status when playing ends
+                audio.onended = function() {
+                    isPlaying = false;
+                    currentAudio = null;
+                    
+                    // Remove playing class
+                    if (index !== undefined) {
+                        const currentItem = document.querySelector(`.sentence-item[data-index="${index}"]`);
+                        if (currentItem) {
+                            currentItem.classList.remove('playing');
+                        }
+                    }
+                    
+                    status.textContent = 'Hoàn thành đọc văn bản.';
+                    status.className = 'status';
+                };
+                
+                // Handle errors
+                audio.onerror = function() {
+                    isPlaying = false;
+                    currentAudio = null;
+                    
+                    // Remove playing class
+                    if (index !== undefined) {
+                        const currentItem = document.querySelector(`.sentence-item[data-index="${index}"]`);
+                        if (currentItem) {
+                            currentItem.classList.remove('playing');
+                        }
+                    }
+                    
+                    status.textContent = 'Đã xảy ra lỗi khi đọc văn bản. Vui lòng thử lại.';
+                    status.className = 'status error';
+                };
+                
+                // Play the audio
+                audio.play();
+            }
+            
+            // Function to read all sentences sequentially
+            function readAllSentences(sentences) {
+                let currentIndex = 0;
+                
+                function playNext() {
+                    if (currentIndex < sentences.length) {
+                        readVietnameseSentence(sentences[currentIndex], currentIndex);
+                        
+                        // Set up event listener for when current sentence finishes
+                        if (currentAudio) {
+                            currentAudio.onended = function() {
+                                currentIndex++;
+                                playNext();
+                            };
+                        } else {
+                            currentIndex++;
+                            playNext();
+                        }
+                    } else {
+                        status.textContent = 'Đã đọc xong tất cả các câu.';
+                        status.className = 'status';
+                    }
+                }
+                
+                playNext();
+            }
+            
+            // Add some sample Vietnamese text
+            vietnameseText.value = "Xin chào, tôi là người Việt Nam.\nTôi yêu đất nước và con người Việt Nam.\nTiếng Việt là ngôn ngữ chính thức của Việt Nam.\nHà Nội là thủ đô của Việt Nam.\nViệt Nam có bờ biển dài và phong cảnh đẹp.\nẨm thực Việt Nam rất phong phú và đa dạng.";
+        });
+    </script>
+</body>
+</html>
