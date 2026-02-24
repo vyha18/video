@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { background: #1e1e1e; display: flex; flex-direction: column; align-items: center; font-family: 'Segoe UI', sans-serif; color: #ecf0f1; }
+        .display { font-size: 56px; margin: 20px; background: #000; padding: 15px 50px; border-radius: 8px; border: 4px solid #8B4513; color: #d4af37; box-shadow: 0 0 20px rgba(212, 175, 55, 0.2); text-shadow: 0 0 10px #d4af37; }
+        .frame { background: #4a270d; padding: 25px; border: 15px solid #2d1808; border-radius: 15px; box-shadow: 0 25px 60px rgba(0,0,0,0.8); display: flex; position: relative; }
+        .rod { width: 60px; height: 380px; background: #111; margin: 0 12px; position: relative; border-radius: 30px; border: 2px solid #333; }
+        .beam { position: absolute; top: 100px; width: 100%; height: 16px; background: #2d1808; z-index: 5; box-shadow: 0 4px 8px rgba(0,0,0,0.6); }
+        .bead { 
+            width: 56px; height: 34px; background: #d4af37; border-radius: 17px; 
+            position: absolute; left: 1px; cursor: pointer; z-index: 10;
+            transition: top 0.1s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+            box-shadow: inset 0 3px 6px rgba(255,255,255,0.4), 0 6px 10px rgba(0,0,0,0.5);
+        }
+        .bead[data-type="heaven"] { background: #bdc3c7; }
+        .controls { margin-top: 30px; }
+        button { padding: 12px 30px; font-size: 18px; cursor: pointer; background: #8B4513; color: white; border: none; border-radius: 5px; transition: 0.2s; }
+        button:hover { background: #a0522d; transform: scale(1.05); }
+    </style>
+</head>
+<body>
+    <h1>Sonic Abacus</h1>
+    <div class="display" id="totalVal">0</div>
+    <div class="frame" id="abacusFrame"></div>
+    <div class="controls"><button onclick="location.reload()">Reset Beads</button></div>
+
+<script>
+    const rodsCount = 7;
+    const frame = document.getElementById('abacusFrame');
+    const display = document.getElementById('totalVal');
+
+    // Audio Context for the "Clack"
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playClack() {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        
+        osc.type = 'triangle'; // Wood-like soft tone
+        osc.frequency.setValueAtTime(150 + Math.random() * 50, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 0.1);
+
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.1);
+    }
+
+    // Create Rods
+    for (let r = 0; r < rodsCount; r++) {
+        const rod = document.createElement('div');
+        rod.className = 'rod';
+        rod.innerHTML = '<div class="beam"></div>';
+        rod.dataset.rodPower = Math.pow(10, (rodsCount - 1 - r));
+        
+        createBead(rod, 0, true); 
+        for (let e = 1; e <= 4; e++) { createBead(rod, e, false); }
+        frame.appendChild(rod);
+    }
+
+    function createBead(rod, index, isHeaven) {
+        const bead = document.createElement('div');
+        bead.className = 'bead';
+        bead.dataset.type = isHeaven ? "heaven" : "earth";
+        bead.dataset.index = index;
+        bead.dataset.active = "false";
+        
+        if (isHeaven) { bead.style.top = "10px"; } 
+        else { bead.style.top = (150 + (index * 40)) + "px"; }
+
+        bead.onclick = function() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            playClack(); // Play the sound!
+
+            const isActive = bead.dataset.active === "true";
+            const siblings = Array.from(rod.getElementsByClassName('bead'));
+            
+            if (isHeaven) {
+                bead.style.top = isActive ? "10px" : "60px";
+                bead.dataset.active = isActive ? "false" : "true";
+            } else {
+                siblings.forEach(s => {
+                    const sIdx = parseInt(s.dataset.index);
+                    if (sIdx === 0) return;
+                    if (!isActive && sIdx <= index) {
+                        s.style.top = (110 - ((1 - sIdx) * 36)) + "px";
+                        s.dataset.active = "true";
+                    } else if (isActive && sIdx >= index) {
+                        s.style.top = (150 + (sIdx * 40)) + "px";
+                        s.dataset.active = "false";
+                    }
+                });
+            }
+            calculateTotal();
+        };
+        rod.appendChild(bead);
+    }
+
+    function calculateTotal() {
+        let total = 0;
+        const rods = document.querySelectorAll('.rod');
+        rods.forEach(rod => {
+            const power = parseInt(rod.dataset.rodPower);
+            let rodValue = 0;
+            rod.querySelectorAll('.bead').forEach(bead => {
+                if (bead.dataset.active === "true") {
+                    rodValue += (bead.dataset.type === "heaven" ? 5 : 1);
+                }
+            });
+            total += (rodValue * power);
+        });
+        display.innerText = total.toLocaleString();
+    }
+</script>
+</body>
+</html>
