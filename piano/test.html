@@ -1587,7 +1587,7 @@ function renderSongLinks(songs){
 }
 
 function loadSongFile(){
-  fetch('file:///C:/Users/PC/Downloads/song.txt')
+  fetch('song.txt')
     .then(r=>{ if(!r.ok) throw new Error('song.txt not found'); return r.text(); })
     .then(text=>renderSongLinks(parseSongFile(text)))
     .catch(()=>{ /* no song.txt next to this file — nothing to show, stay quiet */ });
