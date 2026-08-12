@@ -1,0 +1,1836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stave &amp; Stick — Notation Player</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-950:#10121a;
+    --ink-900:#161927;
+    --ink-850:#1c2033;
+    --ink-800:#242a41;
+    --ink-700:#333a58;
+    --paper:#f2e9d2;
+    --paper-2:#e9dcb8;
+    --paper-line:#b9a878;
+    --paper-ink:#2b2013;
+    --brass:#c99a41;
+    --brass-bright:#f0c26a;
+    --orange:#e0812f;
+    --key-yellow:#e8c94a;
+    --waterfall-blue:#3f7fe0;
+    --waterfall-blue-bright:#7db2ff;
+    --repeat-purple:#6d4fc4;
+    --teal:#4f9088;
+    --rose:#c05a42;
+    --text:#eee6d4;
+    --text-dim:#a9a6c2;
+    --shadow:0 18px 40px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 700px at 15% -10%, #232948 0%, transparent 60%),
+      radial-gradient(1000px 600px at 110% 10%, #201c34 0%, transparent 55%),
+      var(--ink-950);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    padding:28px 20px 60px;
+  }
+  .app{max-width:1240px;margin:0 auto;}
+  header{margin-bottom:22px;display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;}
+  header h1{
+    font-family:'Fraunces',serif;
+    font-optical-sizing:auto;
+    font-weight:700;
+    font-size:clamp(28px,4vw,42px);
+    letter-spacing:.5px;
+    margin:0;
+    background:linear-gradient(90deg,var(--brass-bright),var(--paper) 70%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  header .tag{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12.5px;
+    color:var(--text-dim);
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    border-left:2px solid var(--brass);
+    padding-left:12px;
+  }
+  .panel{
+    background:linear-gradient(180deg,var(--ink-850),var(--ink-900));
+    border:1px solid var(--ink-700);
+    border-radius:14px;
+    padding:18px 18px 20px;
+    box-shadow:var(--shadow);
+    margin-bottom:20px;
+  }
+  .top-row{display:flex;gap:20px;align-items:flex-start;margin-bottom:6px;}
+  .top-row > .panel{margin-bottom:0;}
+  .playback-panel{flex:0 0 230px;width:230px;}
+  .sheet-panel{flex:1;min-width:0;}
+  @media (max-width:820px){
+    .top-row{flex-direction:column;}
+    .playback-panel{width:100%;flex:1 1 auto;}
+  }
+  .panel h2{
+    font-family:'Fraunces',serif;
+    font-size:15px;
+    font-weight:600;
+    margin:0 0 12px;
+    color:var(--brass-bright);
+    letter-spacing:.03em;
+    text-transform:uppercase;
+    display:flex;align-items:center;gap:8px;
+  }
+  .panel h2::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--brass);box-shadow:0 0 8px var(--brass);}
+
+  textarea{
+    width:100%;
+    min-height:170px;
+    resize:vertical;
+    background:var(--ink-950);
+    color:var(--brass-bright);
+    border:1px solid var(--ink-700);
+    border-radius:10px;
+    padding:12px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:12.5px;
+    line-height:1.6;
+  }
+  .btnrow{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+  .playback-panel .btnrow{gap:6px;flex-wrap:nowrap;}
+  .playback-panel .btnrow button{padding:9px 10px;font-size:12px;flex:1 1 auto;min-width:0;}
+  .playback-panel #muteBtn{flex:0 0 auto;padding:9px 10px;font-size:15px;}
+  button{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:13px;
+    border:none;
+    border-radius:9px;
+    padding:9px 14px;
+    cursor:pointer;
+    transition:transform .12s ease, box-shadow .12s ease, opacity .15s ease;
+  }
+  button:active{transform:translateY(1px) scale(.98);}
+  button.primary{background:linear-gradient(180deg,var(--brass-bright),var(--brass));color:#241a06;box-shadow:0 4px 14px rgba(201,154,65,.35);}
+  button.ghost{background:var(--ink-800);color:var(--text);border:1px solid var(--ink-700);}
+  #muteBtn{font-size:16px;padding:9px 12px;line-height:1;}
+  button.stop{background:linear-gradient(180deg,#d97a63,var(--rose));color:#2a0d05;}
+  button:disabled{opacity:.4;cursor:not-allowed;}
+  button:hover:not(:disabled){box-shadow:0 6px 18px rgba(0,0,0,.35);}
+
+  .tempo-row{display:flex;align-items:center;gap:8px;margin-top:0;}
+  .tempo-row input[type=range]{flex:1;accent-color:var(--brass);min-width:0;}
+  .tempo-val{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--brass-bright);min-width:56px;text-align:right;}
+  .tempo-label-row{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;color:var(--text-dim);margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em;}
+  .hint{font-size:11px;color:var(--text-dim);margin-top:6px;}
+  .status{
+    margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-dim);
+    background:var(--ink-950);border:1px solid var(--ink-700);border-radius:8px;padding:8px 10px;min-height:16px;
+  }
+  .error{color:var(--rose);}
+
+  details.legend{margin-top:16px;font-size:12px;color:var(--text-dim);}
+  details.legend summary{cursor:pointer;color:var(--brass-bright);font-weight:600;}
+  details.legend code{background:var(--ink-950);padding:1px 5px;border-radius:4px;color:var(--brass-bright);font-family:'JetBrains Mono',monospace;}
+  details.legend ul{margin:8px 0 0;padding-left:18px;line-height:1.7;}
+  .legend-example{margin-top:12px;}
+  .legend-example-label{color:var(--brass-bright);font-weight:600;margin-bottom:5px;}
+  .legend-example pre{
+    background:var(--ink-950);border:1px solid var(--ink-700);border-radius:8px;
+    padding:10px 12px;margin:0;white-space:pre-wrap;word-break:break-word;
+    font-family:'JetBrains Mono',monospace;font-size:11.5px;line-height:1.7;color:var(--brass-bright);
+  }
+  .song-link{
+    display:block;padding:9px 12px;margin-bottom:6px;
+    background:var(--ink-800);border:1px solid var(--ink-700);border-radius:8px;
+    color:var(--brass-bright);text-decoration:none;font-weight:600;font-size:13.5px;
+    transition:background .1s ease, border-color .1s ease;
+  }
+  .song-link:hover{background:var(--ink-700);border-color:var(--brass);}
+  .song-link.active{background:linear-gradient(180deg,var(--brass-bright),var(--brass));color:#241a06;border-color:transparent;}
+
+  /* metronome */
+  .metro-wrap-vertical{display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:14px;}
+  .metro-svg{filter:drop-shadow(0 8px 16px rgba(0,0,0,.4));}
+  .tempo-compact{margin-bottom:12px;}
+
+  /* sheet panel */
+  .system-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+  .sys-tab{
+    background:var(--ink-800);color:var(--text-dim);
+    border:1px solid var(--ink-700);border-radius:20px;
+    padding:5px 13px;font-size:12px;font-weight:600;
+    font-family:'JetBrains Mono',monospace;cursor:pointer;
+  }
+  .sys-tab.active{
+    background:linear-gradient(180deg,var(--brass-bright),var(--brass));
+    color:#241a06;border-color:transparent;
+  }
+  .sheet-scroll{overflow-x:auto;overflow-y:hidden;border-radius:10px;}
+  .paper-card{
+    background:
+      repeating-linear-gradient(180deg, rgba(0,0,0,0.015) 0 2px, transparent 2px 4px),
+      linear-gradient(180deg,var(--paper),var(--paper-2));
+    border-radius:10px;
+    padding:18px 10px;
+    width:-moz-fit-content;
+    width:fit-content;
+    min-width:100%;
+    box-shadow:inset 0 0 40px rgba(90,64,20,.15);
+  }
+  svg.score{display:block;}
+  .note-active ellipse, .note-active path.notehead-open{ fill:var(--rose) !important; stroke:var(--rose) !important; filter:drop-shadow(0 0 5px rgba(192,90,66,.7)); }
+  .note-active.rest rect, .note-active.rest path, .note-active.rest circle{ fill:var(--rose) !important; stroke:var(--rose) !important; filter:drop-shadow(0 0 5px rgba(192,90,66,.7)); }
+
+  /* piano */
+  .piano-outer{margin-top:0;padding-top:12px;}
+  .piano-scroll{overflow-x:auto;overflow-y:hidden;border-radius:12px;background:linear-gradient(180deg,#0c0d13,#05060a);
+    touch-action:manipulation;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
+  .waterfall-svg{display:block;background:linear-gradient(180deg,#171b2c,#0c0d13);
+    touch-action:manipulation;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
+  .piano{
+    position:relative;
+    background:linear-gradient(180deg,#0c0d13,#05060a);
+    padding:12px 14px 16px;
+    border-radius:0 0 12px 12px;
+    box-shadow:var(--shadow);
+    touch-action:manipulation;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;
+  }
+  .wkey{
+    width:46px;height:106px;
+    background:linear-gradient(180deg,#fbf6ea,#e9dfc4);
+    border:1px solid #7a6a3f;
+    border-left:1px solid #7a6a3f;
+    border-radius:0 0 8px 8px;
+    position:absolute;top:12px;z-index:1;
+    box-shadow:inset 0 -6px 8px rgba(0,0,0,.08);
+    cursor:pointer;
+    transition:background .08s ease;
+    touch-action:manipulation;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;
+  }
+  .wkey:hover{background:linear-gradient(180deg,#fffdf5,#f1e8ce);}
+  .wkey.key-active{background:linear-gradient(180deg,var(--brass-bright),var(--brass)) !important;box-shadow:0 0 14px var(--brass-bright), inset 0 -6px 8px rgba(0,0,0,.15);}
+  .bkey{
+    width:27px;height:64px;
+    background:linear-gradient(180deg,#2a2620,#0b0a08);
+    border:1px solid #000;
+    border-radius:0 0 5px 5px;
+    position:absolute;top:12px;z-index:2;
+    cursor:pointer;
+    box-shadow:0 4px 6px rgba(0,0,0,.5);
+    touch-action:manipulation;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;
+  }
+  .bkey.key-active{background:linear-gradient(180deg,var(--brass-bright),#8a6416) !important;box-shadow:0 0 14px var(--brass-bright);}
+  .finger-badge{
+    position:absolute;left:50%;bottom:5px;transform:translateX(-50%);
+    width:23px;height:23px;border-radius:50%;
+    background:var(--rose);color:#fff;
+    font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:800;
+    display:none;align-items:center;justify-content:center;
+    box-shadow:0 0 9px rgba(0,0,0,.6), 0 0 0 2px rgba(255,255,255,.15);
+    pointer-events:none;
+  }
+  .finger-badge.show{display:flex;}
+  .wkey-name{
+    position:absolute;top:6px;transform:translateX(-50%);
+    width:26px;height:26px;border-radius:50%;
+    background:var(--key-yellow);color:#1a1200;
+    font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:900;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 0 0 2.5px #1a1200, 0 2px 6px rgba(0,0,0,.6);
+    pointer-events:none;
+    z-index:5;
+  }
+  .octave-label{position:absolute;bottom:-15px;left:3px;font-size:9px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;}
+  .hand-divider{
+    position:absolute;top:6px;bottom:6px;width:3px;
+    background:var(--brass-bright);border-radius:2px;
+    box-shadow:0 0 8px rgba(240,194,106,.6);
+    z-index:4;
+  }
+
+  footer{margin-top:26px;text-align:center;color:var(--text-dim);font-size:11px;font-family:'JetBrains Mono',monospace;}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Stave &amp; Stick</h1>
+    <span class="tag">notation → staff · metronome · keyboard</span>
+  </header>
+
+  <div class="top-row">
+    <div class="panel playback-panel">
+      <h2>Playback</h2>
+      <div class="metro-wrap-vertical">
+        <svg class="metro-svg" id="metroSvg" width="150" height="118" viewBox="0 0 150 118"></svg>
+        <div id="metroStatus" class="hint" style="margin-top:0;">Idle</div>
+      </div>
+      <div class="tempo-compact">
+        <div class="tempo-label-row"><span>Tempo</span><span class="tempo-val" id="tempoVal">90 BPM</span></div>
+        <input type="range" id="tempoInput" min="10" max="208" value="90" style="width:100%;">
+        <div class="hint">Applies on next Play.</div>
+      </div>
+      <div class="btnrow">
+        <button class="primary" id="playBtn">▶ Play</button>
+        <button class="ghost" id="soundlessBtn" title="Play visuals only — you supply the sound by hitting the right keys">🔇 Soundless</button>
+      </div>
+      <div class="btnrow">
+        <button class="stop" id="stopBtn" disabled>■ Stop</button>
+        <button class="ghost" id="muteBtn" title="Mute sound (visuals keep playing)" aria-label="Mute">🔊</button>
+      </div>
+    </div>
+
+    <div class="panel sheet-panel">
+      <h2>Sheet music</h2>
+      <div class="system-tabs" id="systemTabs"></div>
+      <div class="sheet-scroll">
+        <div class="paper-card">
+          <div id="scoreSystems"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel piano-outer">
+    <div class="piano-scroll">
+      <svg class="waterfall-svg" id="waterfallSvg"></svg>
+      <div class="piano" id="piano"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Notation</h2>
+    <textarea id="scoreInput" spellcheck="false"></textarea>
+    <div class="btnrow">
+      <button class="primary" id="renderBtn">Render</button>
+      <button class="ghost" id="resetBtn">Load example</button>
+    </div>
+    <div class="status" id="statusBox">Press Render to draw the score.</div>
+
+    <details class="legend">
+      <summary>Notation reference</summary>
+      <ul>
+        <li><code>Key Signature: 3/4</code> sets the time signature</li>
+        <li><code>Treble Clef1:</code> / <code>Bass Clef1:</code> start a staff (Clef2, Clef3… add more pairs)</li>
+        <li>Line/space number: <code>0</code> middle line, positive = up, negative = down</li>
+        <li>Duration: <code>w h q e s</code> — add <code>r</code> for a rest, e.g. <code>qr</code></li>
+        <li>Accidental prefix (this note only): <code>sh-</code> sharp, <code>fl-</code> flat</li>
+        <li>Finger: <code>(1)</code> … <code>(5)</code> after the note</li>
+        <li>Dot (notes): <code>.</code> right after the duration (e.g. <code>q.</code>) adds 50% to its length</li>
+        <li>Dot (rests): <code>.</code> right after the <code>r</code> (e.g. <code>qr.</code>, <code>hr.</code>) adds 50% to its length</li>
+        <li><code>tie</code> between two identical notes joins them — even across a page break into the next clef pair</li>
+        <li><code>{ }</code> groups notes played as a chord</li>
+        <li>
+          <strong>Key signature rule:</strong> add <code>&lt;position&gt;-sh</code> or <code>&lt;position&gt;-fl</code> after the time signature,
+          e.g. <code>Key Signature: 4/4 0-sh 1-fl</code>. This sharps/flats <em>every</em> note of that letter, on any line or space,
+          on every staff — e.g. <code>0-sh</code> makes every <b>B</b> sharp and <code>1-fl</code> makes every <b>C</b> flat, the same way a
+          real key signature works. To keep the sheet readable, notes affected only by this rule don't show a ♯/♭ mark on the
+          staff (it's implied) — but the falling notes in the waterfall panel always spell it out clearly (e.g. "B♯", "C♭") along
+          with the finger number, so it's never ambiguous during practice.
+        </li>
+        <li>
+          <code>sh-</code> / <code>fl-</code> directly on a note always overrides the key signature for that one note (and its
+          ♯/♭ <em>is</em> shown on the staff, since it's an explicit accidental).
+        </li>
+        <li>
+          <code>na-</code> prefix (e.g. <code>na-1q(3)</code>) cancels the key signature's effect for just that one note, making
+          it natural — shown on the staff as a ♮ mark.
+        </li>
+        <li>
+          <strong>Clef-only key signature:</strong> add <code>-tr</code> or <code>-ba</code> after a key signature rule to limit
+          it to one clef — e.g. <code>Key Signature: 4/4 1-sh 2-sh-tr -2-fl-ba</code> makes every C sharp on <em>both</em> clefs,
+          every D sharp on the <b>Treble</b> clef only, and every G flat on the <b>Bass</b> clef only. A clef-specific rule
+          overrides a universal rule for that letter, but only on that one clef.
+        </li>
+        <li>
+          <strong>Repeats:</strong> define a group once — <code>Repeat1: Clef1, Clef2, Clef3, Clef4</code> — then drop the
+          token <code>Repeat1</code> into any staff's note line to replay that whole group of pairs from there. Repeat the
+          token itself to repeat the group multiple times, e.g. <code>Repeat1 Repeat1</code> plays clef pairs 1–4, then
+          plays clef pairs 1–4 again, before continuing on. The sheet still shows each clef pair's music only once — the
+          repeat token itself appears as a small marker on the staff where you wrote it, and during playback the system
+          jumps back to replay the referenced pairs the requested number of times.
+        </li>
+      </ul>
+      <div class="legend-example">
+        <div class="legend-example-label">Example — covers every case above:</div>
+        <pre id="legendExample"></pre>
+      </div>
+    </details>
+  </div>
+
+  <div class="panel" id="songListPanel" style="display:none;">
+    <h2>Songs</h2>
+    <div class="hint" style="margin-top:0;margin-bottom:8px;">From song.txt — click a title to load and render it.</div>
+    <div id="songLinks"></div>
+  </div>
+
+  <footer>parsed entirely client-side · Web Audio synthesis · no data leaves your browser</footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------------------------------------------------------------------- */
+/* Constants                                                               */
+/* ---------------------------------------------------------------------- */
+const DUR_UNITS = {w:4, h:2, q:1, e:0.5, s:0.25};
+const LETTERS   = ['C','D','E','F','G','A','B'];
+const SEMITONES = [0,2,4,5,7,9,11];
+const CLEF_BASE = { treble:{li:6, oct:4}, bass:{li:6, oct:3} }; // position 0 = B
+
+const SVGNS = 'http://www.w3.org/2000/svg';
+
+const DEFAULT_SCORE =
+`Key Signature: 4/4 0-sh 1-fl
+
+Treble Clef1: 0q(1) 1q(2) 2q(3) 4q(4) sh-1e(1) fl-1e(1) 1q.(2) 1e(2) 1q(3) wr -1q(5) tie
+Bass Clef1: {-2q(3) -1q(2) 0q(1)} hr. {-4h(5) -2h(3)} qr er sr
+
+Treble Clef2: -1q(5) 0q(4) na-1q(3) 2q(2)
+Bass Clef2: 1q(2) tie 1q(2) 2q(3) 0h(1)`;
+
+/* ---------------------------------------------------------------------- */
+/* Parsing                                                                 */
+/* ---------------------------------------------------------------------- */
+function positionToPitch(position, clefType, accidental){
+  const base = CLEF_BASE[clefType] || CLEF_BASE.treble;
+  const idx = base.li + position;
+  const octShift = Math.floor(idx/7);
+  const li = ((idx % 7) + 7) % 7;
+  const letter = letterAt(li);
+  const octave = base.oct + octShift;
+  let semitone = SEMITONES[li];
+  if(accidental==='sharp') semitone += 1;
+  if(accidental==='flat')  semitone -= 1;
+  const midi = (octave+1)*12 + semitone;
+  return {letter, octave, midi};
+}
+function letterAt(i){ return LETTERS[i]; }
+
+/* which letter name a given line/space position resolves to — independent
+   of clef/octave, since both clefs share the same letter cycle (position 0
+   is always "B"). Used to resolve key-signature rules like "0-sh". */
+function letterForPosition(position){
+  const idx = CLEF_BASE.treble.li + position;
+  const li = ((idx % 7) + 7) % 7;
+  return LETTERS[li];
+}
+
+function parseNoteToken(tok, clefType, keySigMap){
+  // rests never need a line/space number or finger, but tolerate either if
+  // typed out of habit (e.g. "1qr" or "qr(1)") so a stray extra never
+  // silently drops the rest. The augmentation dot for a rest goes AFTER
+  // the "r" (e.g. "hr.", "qr.") — but a dot right before "r" is tolerated
+  // too, so either placement works.
+  let m = tok.match(/^(?:-?\d+)?([whqesWHQES])(\.)?[rR](\.)?(?:\(\d+\))?$/);
+  if(m) return {rest:true, durLetter:m[1].toLowerCase(), dotted: !!(m[2]||m[3])};
+
+  m = tok.match(/^(sh-|fl-|na-)?(-?\d+)([whqesWHQES])(\.)?(?:\((\d+)\))?$/);
+  if(!m) return null;
+  const prefix = m[1] || null;
+  const position = parseInt(m[2],10);
+  const durLetter = m[3].toLowerCase();
+  const dotted = !!m[4];
+  const finger = m[5] ? parseInt(m[5],10) : null;
+
+  // key-signature rule (e.g. "0-sh") auto-applies to every note of that
+  // letter, on any line/space, unless this note has its own explicit
+  // accidental (sh-/fl-) or is explicitly naturalized (na-).
+  const letterHere = letterForPosition(position);
+  const keySigAcc = keySigMap ? keySigMap[letterHere] : null;
+
+  let accidental = null;        // effective accidental actually sounded
+  let accidentalExplicit = false; // true only for an explicit sh-/fl- on THIS note
+  let naturalCancels = false;     // true when na- overrides an active key-signature accidental
+
+  if(prefix === 'sh-'){ accidental = 'sharp'; accidentalExplicit = true; }
+  else if(prefix === 'fl-'){ accidental = 'flat'; accidentalExplicit = true; }
+  else if(prefix === 'na-'){ naturalCancels = !!keySigAcc; }
+  else if(keySigAcc){ accidental = keySigAcc; }
+
+  const pitch = positionToPitch(position, clefType, accidental);
+  return {rest:false, position, durLetter, dotted, finger, accidental, accidentalExplicit, naturalCancels,
+    letter:pitch.letter, octave:pitch.octave, midi:pitch.midi};
+}
+
+/* the accidental symbol to actually print on the sheet — real engraving
+   only marks an accidental when it's an explicit override or cancels one,
+   never for a plain key-signature effect (that's implied, like a real
+   key signature). The waterfall panel, by contrast, always spells it out. */
+function sheetAccidentalSymbol(note){
+  if(note.accidentalExplicit) return note.accidental==='sharp' ? '\u266F' : '\u266D';
+  if(note.naturalCancels) return '\u266E';
+  return '';
+}
+
+/* duration of an event in quarter-note units, honouring a dotted flag ("." = +50%) */
+function durUnitsOf(ev){
+  if(ev.type==='repeat') return 0; // a repeat marker takes no timeline duration itself
+  return DUR_UNITS[ev.durLetter] * (ev.dotted ? 1.5 : 1);
+}
+
+function tokenizeStaff(raw, clefType, keySigMap){
+  const tokens = raw.match(/\{[^}]*\}|tie|\S+/g) || [];
+  const events = [];
+  tokens.forEach(tok=>{
+    if(/^tie$/i.test(tok)){ events.push({type:'tie'}); return; }
+    const repeatMatch = tok.match(/^Repeat(\d+)$/i);
+    if(repeatMatch){ events.push({type:'repeat', groupName:'Repeat'+repeatMatch[1]}); return; }
+    if(tok.startsWith('{')){
+      const inner = tok.slice(1,-1).trim();
+      const subtoks = inner.split(/\s+/).filter(Boolean);
+      const notes = subtoks.map(t=>parseNoteToken(t, clefType, keySigMap)).filter(n=>n && !n.rest);
+      if(notes.length===0) return;
+      events.push({type:'chord', durLetter:notes[0].durLetter, dotted:notes[0].dotted, notes, tieToNext:false, tieFromPrev:false});
+      return;
+    }
+    const parsed = parseNoteToken(tok, clefType, keySigMap);
+    if(!parsed){
+      // last-resort fallback: if the token clearly looks like it was meant
+      // to be a rest (a duration letter with an 'r' somewhere after it) but
+      // didn't match the strict patterns above, salvage it as a rest rather
+      // than silently dropping it.
+      const loose = tok.match(/^[^whqesWHQES]*([whqesWHQES])(\.)?.*[rR](\.)?[^whqesWHQES]*$/);
+      if(loose){
+        events.push({type:'rest', durLetter:loose[1].toLowerCase(), dotted: !!(loose[2]||loose[3])});
+      }
+      return;
+    }
+    if(parsed.rest){
+      events.push({type:'rest', durLetter:parsed.durLetter, dotted:parsed.dotted});
+    } else {
+      events.push({type:'note', durLetter:parsed.durLetter, dotted:parsed.dotted, notes:[parsed], tieToNext:false, tieFromPrev:false});
+    }
+  });
+
+  // resolve tie markers against neighbouring (non-tie, non-repeat) events
+  for(let i=0;i<events.length;i++){
+    if(events[i].type!=='tie') continue;
+    let p=i-1; while(p>=0 && (events[p].type==='tie'||events[p].type==='repeat')) p--;
+    let n=i+1; while(n<events.length && (events[n].type==='tie'||events[n].type==='repeat')) n++;
+    if(events[p]) events[p].tieToNext = true;
+    if(events[n]) events[n].tieFromPrev = true;
+    if(events[p] && events[n]) events[p]._next = events[n];
+  }
+
+  // collapse consecutive "RepeatN" markers of the same group into a
+  // directive with a count (e.g. "Repeat1 Repeat1" -> play group 1 twice) —
+  // used to build the playback sequence. The markers themselves STAY in
+  // the returned event stream so they can also be drawn on the staff.
+  const repeatDirectives = [];
+  const noRepeat = events.filter(e=>e.type!=='tie');
+  let i = 0;
+  while(i < noRepeat.length){
+    if(noRepeat[i].type==='repeat'){
+      const groupName = noRepeat[i].groupName;
+      let count = 0;
+      while(i < noRepeat.length && noRepeat[i].type==='repeat' && noRepeat[i].groupName===groupName){ count++; i++; }
+      repeatDirectives.push({groupName, count});
+      continue;
+    }
+    i++;
+  }
+  return {events: noRepeat, repeatDirectives};
+}
+
+function buildMeasures(events, beatsPerMeasure){
+  const measures = [];
+  let current = [];
+  let acc = 0;
+  events.forEach(ev=>{
+    const du = durUnitsOf(ev);
+    current.push(ev);
+    acc += du;
+    if(acc >= beatsPerMeasure - 1e-9){
+      measures.push(current);
+      current = [];
+      acc = 0;
+    }
+  });
+  if(current.length) measures.push(current);
+  if(measures.length===0) measures.push([]);
+  return measures;
+}
+
+function parseScore(raw){
+  const lines = raw.split('\n').map(l=>l.trim()).filter(Boolean);
+  let timeSig = {num:4, den:4};
+  const keySigUniversal = {}; // letter -> 'sharp'|'flat', from rules with no clef suffix (applies to both clefs)
+  const keySigTreble = {};    // letter -> 'sharp'|'flat', from "-tr" rules (overrides universal, treble only)
+  const keySigBass = {};      // letter -> 'sharp'|'flat', from "-ba" rules (overrides universal, bass only)
+  const keySigRules = [];     // [{position, type, scope}] — preserves exact positions for drawing symbols on the staff
+  const repeatGroups = {};    // 'Repeat1' -> [1,2,3,4] (clef numbers)
+  const staffDefs = [];
+  lines.forEach(line=>{
+    let m;
+    if(m = line.match(/^Key\s*Signature\s*:\s*(\d+)\s*\/\s*(\d+)(.*)$/i)){
+      timeSig = {num:parseInt(m[1],10), den:parseInt(m[2],10)};
+      const ruleTokens = (m[3]||'').match(/-?\d+-(?:sh|fl)(?:-(?:tr|ba))?/gi) || [];
+      ruleTokens.forEach(rt=>{
+        const rm = rt.match(/^(-?\d+)-(sh|fl)(?:-(tr|ba))?$/i);
+        if(!rm) return;
+        const pos = parseInt(rm[1],10);
+        const letter = letterForPosition(pos);
+        const type = rm[2].toLowerCase()==='sh' ? 'sharp' : 'flat';
+        const scopeSuffix = rm[3] ? rm[3].toLowerCase() : null;
+        if(scopeSuffix==='tr'){ keySigTreble[letter] = type; keySigRules.push({position:pos, type, scope:'treble'}); }
+        else if(scopeSuffix==='ba'){ keySigBass[letter] = type; keySigRules.push({position:pos, type, scope:'bass'}); }
+        else { keySigUniversal[letter] = type; keySigRules.push({position:pos, type, scope:'both'}); }
+      });
+      return;
+    }
+    if(m = line.match(/^Repeat\s*(\d+)\s*:\s*(.*)$/i)){
+      const groupName = 'Repeat'+m[1];
+      const nums = (m[2]||'').split(',').map(s=>{
+        const cm = s.trim().match(/^Clef\s*(\d+)$/i);
+        return cm ? parseInt(cm[1],10) : null;
+      }).filter(n=>n!==null);
+      repeatGroups[groupName] = nums;
+      return;
+    }
+    if(m = line.match(/^(Treble|Bass)\s*Clef\s*(\d+)\s*:\s*(.*)$/i)){
+      staffDefs.push({type:m[1].toLowerCase(), number:parseInt(m[2],10), label:`${cap(m[1])} Clef ${m[2]}`, raw:m[3]});
+      return;
+    }
+  });
+  if(staffDefs.length===0){
+    throw new Error('No staves found. Add a line like "Treble Clef1: 1q(1) 0q(2)".');
+  }
+  // clef-specific rules override the universal rule for that letter, but
+  // only for that clef — the other clef still gets the universal one
+  const keySigForClef = {
+    treble: Object.assign({}, keySigUniversal, keySigTreble),
+    bass: Object.assign({}, keySigUniversal, keySigBass)
+  };
+  const beatsPerMeasure = timeSig.num * (4/timeSig.den);
+  const staves = staffDefs.map(def=>{
+    const tok = tokenizeStaff(def.raw, def.type, keySigForClef[def.type]);
+    const measures = buildMeasures(tok.events, beatsPerMeasure);
+    return {...def, events:tok.events, measures, repeatDirectives:tok.repeatDirectives};
+  });
+
+  // a repeat marker (e.g. "Repeat1") can land on either the treble or bass
+  // line of a clef pair — either way it's a directive for the WHOLE system,
+  // so merge whatever was found on both voices onto that clef number.
+  const systemRepeatDirectives = {};
+  staves.forEach(s=>{
+    if(s.repeatDirectives && s.repeatDirectives.length){
+      systemRepeatDirectives[s.number] = (systemRepeatDirectives[s.number]||[]).concat(s.repeatDirectives);
+    }
+  });
+
+  // a "tie" after the very last note of one clef (e.g. Treble Clef1) has no
+  // following note within that same staff to attach to — carry it forward
+  // into the first note of the next clef of the same type (Treble Clef2).
+  ['treble','bass'].forEach(type=>{
+    const list = staves.filter(s=>s.type===type).sort((a,b)=>a.number-b.number);
+    for(let i=0;i<list.length-1;i++){
+      const curEvents = list[i].events.filter(e=>e.type!=='repeat');
+      const nextEvents = list[i+1].events.filter(e=>e.type!=='repeat');
+      if(curEvents.length===0 || nextEvents.length===0) continue;
+      const lastEv = curEvents[curEvents.length-1];
+      const firstEv = nextEvents[0];
+      if(lastEv.tieToNext && !lastEv._next && lastEv.type!=='rest' && firstEv.type!=='rest'){
+        lastEv._next = firstEv;
+        firstEv.tieFromPrev = true;
+        lastEv._crossStaffTie = true;
+        firstEv._crossStaffTieIn = true;
+      }
+    }
+  });
+
+  return {timeSig, beatsPerMeasure, staves, keySigRules, repeatGroups, systemRepeatDirectives};
+}
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1).toLowerCase(); }
+
+/* ---------------------------------------------------------------------- */
+/* Layout constants                                                        */
+/* ---------------------------------------------------------------------- */
+const LEFT_MARGIN = 150;
+const STAFF_GAP = 11;           // distance between adjacent staff lines
+const STAFF_HEIGHT = STAFF_GAP*4;
+const GRAND_GAP = 48;           // treble bottom -> bass top (fits letter+finger badge rows without collision)
+const SYSTEM_GAP = 52;
+const TOP_MARGIN = 32;
+const STEM_LEN = 30;
+const NOTE_RX = 6.2, NOTE_RY = 4.6;
+
+function measureWidth(beatsPerMeasure){
+  return Math.max(150, 58*beatsPerMeasure + 46);
+}
+
+function svgEl(tag, attrs){
+  const e = document.createElementNS(SVGNS, tag);
+  if(attrs) for(const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+function svgText(x,y,str,attrs){
+  const t = svgEl('text', Object.assign({x,y}, attrs||{}));
+  t.textContent = str;
+  return t;
+}
+
+/* y position for a staff line/space value */
+function yForPosition(staffTop, position){
+  return staffTop + (2 - position/2) * STAFF_GAP;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Rendering                                                               */
+/* ---------------------------------------------------------------------- */
+function renderScore(score){
+  const container = document.getElementById('scoreSystems');
+  const tabsWrap = document.getElementById('systemTabs');
+  container.innerHTML = '';
+  tabsWrap.innerHTML = '';
+
+  const mw = measureWidth(score.beatsPerMeasure);
+  const numbers = Array.from(new Set(score.staves.map(s=>s.number))).sort((a,b)=>a-b);
+  const pianoMidis = [];
+  const systems = [];
+
+  numbers.forEach((num, sysIdx)=>{
+    const treble = score.staves.find(s=>s.type==='treble' && s.number===num) || null;
+    const bass   = score.staves.find(s=>s.type==='bass'   && s.number===num) || null;
+    const totalMeasures = Math.max(1, treble?treble.measures.length:0, bass?bass.measures.length:0);
+    const totalWidth = LEFT_MARGIN + totalMeasures*mw + 30;
+
+    const svg = svgEl('svg', {class:'score', 'data-sys':sysIdx});
+    const trebleTop = TOP_MARGIN;
+    let bassTop = null;
+    let bottom = trebleTop;
+
+    const trebleKeySigRules = (score.keySigRules||[]).filter(r=>r.scope==='both'||r.scope==='treble');
+    const bassKeySigRules = (score.keySigRules||[]).filter(r=>r.scope==='both'||r.scope==='bass');
+
+    if(treble){ drawStaffFrame(svg, trebleTop, mw, totalMeasures, score.timeSig, 'treble', trebleKeySigRules); bottom = trebleTop+STAFF_HEIGHT; }
+    if(bass){
+      bassTop = treble ? trebleTop+STAFF_HEIGHT+GRAND_GAP : trebleTop;
+      drawStaffFrame(svg, bassTop, mw, totalMeasures, score.timeSig, 'bass', bassKeySigRules);
+      bottom = bassTop+STAFF_HEIGHT;
+    }
+    if(treble) drawStaffContent(svg, treble, trebleTop, mw, pianoMidis);
+    if(bass)   drawStaffContent(svg, bass, bassTop, mw, pianoMidis);
+    if(treble && bass){
+      svg.appendChild(svgEl('line',{x1:LEFT_MARGIN-4,y1:trebleTop,x2:LEFT_MARGIN-4,y2:bassTop+STAFF_HEIGHT,stroke:'var(--paper-ink)','stroke-width':2}));
+    }
+
+    const totalHeight = bottom + TOP_MARGIN;
+    svg.setAttribute('viewBox', `0 0 ${totalWidth} ${totalHeight}`);
+    svg.setAttribute('width', totalWidth);
+    svg.setAttribute('height', totalHeight);
+
+    const playhead = svgEl('line',{x1:LEFT_MARGIN,y1:4,x2:LEFT_MARGIN,y2:totalHeight-4,stroke:'var(--rose)','stroke-width':2,opacity:0});
+    svg.appendChild(playhead);
+    svg.style.display = sysIdx===0 ? 'block' : 'none';
+    container.appendChild(svg);
+
+    systems.push({index:sysIdx, number:num, treble, bass, svg, mw, totalMeasures, playhead});
+
+    const tab = document.createElement('button');
+    tab.className = 'sys-tab' + (sysIdx===0 ? ' active' : '');
+    tab.textContent = (treble && bass) ? `Pair ${sysIdx+1}` : (treble ? `Treble ${num}` : `Bass ${num}`);
+    tab.addEventListener('click', ()=>showSystem(sysIdx));
+    tabsWrap.appendChild(tab);
+  });
+
+  return {mw, systems, pianoMidis, leftMargin:LEFT_MARGIN};
+}
+
+function showSystem(idx){
+  if(!currentLayout) return;
+  currentLayout.systems.forEach((s,i)=>{
+    s.svg.style.display = (i===idx) ? 'block' : 'none';
+    if(i!==idx) s.playhead.setAttribute('opacity', 0);
+  });
+  const tabs = document.querySelectorAll('#systemTabs .sys-tab');
+  tabs.forEach((btn,i)=>btn.classList.toggle('active', i===idx));
+  currentSystemIndex = idx;
+  // only rebuild the (windowed) keyboard when not mid-playback — rebuilding
+  // during playback would invalidate the waterfall's already-scheduled note
+  // positions, which were built against the keyboard shown when Play started
+  if(!playing) buildPianoForSystem(idx);
+}
+
+function drawStaffFrame(svg, top, mw, totalMeasures, timeSig, clefType, keySigRules){
+  // 5 lines — extended left past the key-signature zone so each accidental
+  // symbol visibly sits ON a staff line, not floating in the margin
+  const totalW = totalMeasures*mw;
+  const STAFF_LEFT_EXT = 90;
+  for(let i=0;i<5;i++){
+    const ly = top + i*STAFF_GAP;
+    svg.appendChild(svgEl('line',{x1:LEFT_MARGIN-STAFF_LEFT_EXT,y1:ly,x2:LEFT_MARGIN+totalW,y2:ly,stroke:'var(--paper-line)','stroke-width':1.2}));
+  }
+  // clef glyph
+  if(clefType==='treble'){
+    svg.appendChild(svgText(LEFT_MARGIN-125, top+STAFF_GAP*3.3, '\uD834\uDD1E', {'font-size':44, fill:'var(--paper-ink)', 'font-family':"'Fraunces', serif"}));
+  } else {
+    svg.appendChild(svgText(LEFT_MARGIN-125, top+STAFF_GAP*1.6, '\uD834\uDD22', {'font-size':28, fill:'var(--paper-ink)', 'font-family':"'Fraunces', serif"}));
+  }
+  // key signature — one symbol per rule, at the very line/space it names.
+  // Anchored right against the time signature (not the clef), like real
+  // sheet music, so it never leaves a big empty gap before the time sig.
+  const keySigSpacing = 11;
+  const keySigEndX = LEFT_MARGIN - 16 - 12; // small gap before the time signature
+  (keySigRules||[]).forEach((rule, i)=>{
+    const y = yForPosition(top, rule.position) + 4;
+    const x = keySigEndX - ((keySigRules.length-1) - i)*keySigSpacing;
+    const sym = rule.type==='sharp' ? '\u266F' : '\u266D';
+    svg.appendChild(svgText(x, y, sym, {'font-size':15,'font-weight':700, fill:'var(--paper-ink)'}));
+  });
+  // time signature
+  svg.appendChild(svgText(LEFT_MARGIN-16, top+STAFF_GAP*1.5, String(timeSig.num), {'font-size':16,'font-weight':700, fill:'var(--paper-ink)', 'font-family':"'JetBrains Mono', monospace", 'text-anchor':'middle'}));
+  svg.appendChild(svgText(LEFT_MARGIN-16, top+STAFF_GAP*3.5, String(timeSig.den), {'font-size':16,'font-weight':700, fill:'var(--paper-ink)', 'font-family':"'JetBrains Mono', monospace", 'text-anchor':'middle'}));
+  // measure barlines
+  for(let m=0;m<=totalMeasures;m++){
+    const bx = LEFT_MARGIN + m*mw;
+    svg.appendChild(svgEl('line',{x1:bx,y1:top,x2:bx,y2:top+STAFF_HEIGHT,stroke:'var(--paper-ink)','stroke-width': m===totalMeasures?2.4:1}));
+  }
+}
+
+function drawStaffContent(svg, staff, top, mw, pianoMidis){
+  staff.measures.forEach((measure, mIdx)=>{
+    let cursor = 0;
+    let repeatSlot = 0; // offsets consecutive repeat markers so they don't stack on each other
+    const mCap = measure.reduce((a,e)=>a+durUnitsOf(e),0) || 1;
+    measure.forEach(ev=>{
+      const du = durUnitsOf(ev);
+      const frac = cursor / Math.max(mCap, du);
+      const innerStart = LEFT_MARGIN + mIdx*mw + 16;
+      const innerWidth = mw - 32;
+      let x = innerStart + frac*innerWidth;
+      const g = svgEl('g',{class:'note-group'});
+      svg.appendChild(g);
+      ev.svgEl = g;
+
+      if(ev.type==='repeat'){
+        x += repeatSlot*58;
+        repeatSlot++;
+        ev._x = x;
+        drawRepeatMarker(g, x, top, ev.groupName);
+      } else if(ev.type==='rest'){
+        ev._x = x;
+        drawRest(g, x, top, ev.durLetter, ev.dotted);
+      } else {
+        ev._x = x;
+        drawNoteOrChord(g, x, top, ev);
+        ev.notes.forEach(n=>pianoMidis.push(n.midi));
+      }
+      cursor += du;
+    });
+  });
+
+  // ties within this staff, plus stub hooks where a tie crosses into/out of
+  // a different clef pair (a full arc isn't possible since that's a
+  // separate, separately-paginated system)
+  const flat = staff.measures.flat();
+  flat.forEach(ev=>{
+    if(ev.type==='rest' || ev.type==='repeat') return;
+    if(ev._crossStaffTieIn){
+      drawTieStub(svg, ev, top, 'in');
+    }
+    if(ev.tieToNext && ev._next){
+      if(ev._crossStaffTie){
+        drawTieStub(svg, ev, top, 'out');
+      } else if(ev._next.svgEl && ev._next.type!=='rest'){
+        drawTie(svg, ev, ev._next, top);
+      }
+    }
+  });
+}
+
+function drawNoteOrChord(g, x, top, ev){
+  const positions = ev.notes.map(n=>n.position);
+  const ys = positions.map(p=>yForPosition(top, p));
+  const avgPos = positions.reduce((a,b)=>a+b,0)/positions.length;
+  const stemUp = avgPos <= 0;
+  const isOpen = ev.durLetter==='w' || ev.durLetter==='h';
+  const hasStem = ev.durLetter!=='w';
+
+  // ledger lines
+  ev.notes.forEach(n=>{
+    if(n.position>4){
+      for(let p=6;p<=n.position;p+=2) drawLedger(g, x, yForPosition(top,p));
+    } else if(n.position<-4){
+      for(let p=-6;p>=n.position;p-=2) drawLedger(g, x, yForPosition(top,p));
+    }
+  });
+
+  // stem
+  if(hasStem){
+    const stemX = stemUp ? x+NOTE_RX-1 : x-NOTE_RX+1;
+    const extremeY = stemUp ? Math.min(...ys) : Math.max(...ys);
+    const tipY = stemUp ? extremeY-STEM_LEN : extremeY+STEM_LEN;
+    g.appendChild(svgEl('line',{x1:stemX,y1:extremeY,x2:stemX,y2:tipY,stroke:'var(--paper-ink)','stroke-width':1.6}));
+    if(ev.durLetter==='e' || ev.durLetter==='s'){
+      drawFlag(g, stemX, tipY, stemUp);
+      if(ev.durLetter==='s') drawFlag(g, stemX, tipY + (stemUp?10:-10), stemUp);
+    }
+  }
+
+  const n = ev.notes.length;
+  const slotSpacing = 16; // horizontal spread for chord badges, so they never stack
+
+  ev.notes.forEach((note,i)=>{
+    const ny = ys[i];
+    const sheetSym = sheetAccidentalSymbol(note);
+    const label = note.letter + sheetSym;
+    if(sheetSym){
+      g.appendChild(svgText(x-15, ny+4, sheetSym, {'font-size':13, fill:'var(--paper-ink)'}));
+    }
+    const head = svgEl('ellipse',{cx:x, cy:ny, rx:NOTE_RX, ry:NOTE_RY, transform:`rotate(-18 ${x} ${ny})`,
+      fill: isOpen ? 'none' : 'var(--paper-ink)', stroke:'var(--paper-ink)', 'stroke-width': isOpen?1.6:1});
+    g.appendChild(head);
+
+    // augmentation dot ("." in the notation = +50% duration)
+    if(ev.dotted){
+      g.appendChild(svgEl('circle',{cx:x+NOTE_RX+5, cy:ny-2, r:2.2, fill:'#0d0a05'}));
+    }
+
+    // horizontal slot for this note's badges (within-staff case only), so
+    // chord notes never overlap
+    const dx = (i - (n-1)/2) * slotSpacing;
+    const bx = x + dx;
+
+    // A note far enough above the staff can reach the fixed letter row
+    // above it; a note far enough below can reach the fixed finger row
+    // below it. Only the badge actually at risk moves — to the LEFT of
+    // the notehead, at the note's own height — while the other badge
+    // stays in its normal fixed row as usual.
+    const highLedger = note.position > 4;
+    const lowLedger = note.position < -4;
+    const lx = x - NOTE_RX - 12;
+
+    // note-letter badge (orange) — matches the sheet's own convention:
+    // only show the symbol for an explicit accidental or a natural that's
+    // cancelling one, never a plain key-signature effect (implied, same
+    // as real notation)
+    if(highLedger){
+      g.appendChild(svgEl('circle',{cx:lx, cy:ny, r:9, fill:'var(--orange)'}));
+      g.appendChild(svgText(lx, ny+3.4, label, {'font-size': label.length>1?8:10.5, 'font-weight':800, fill:'#2b1400', 'text-anchor':'middle','font-family':"'JetBrains Mono', monospace"}));
+    } else {
+      const letterY = top - 17;
+      g.appendChild(svgEl('circle',{cx:bx, cy:letterY, r:9, fill:'var(--orange)'}));
+      g.appendChild(svgText(bx, letterY+3.4, label, {'font-size': label.length>1?8:10.5, 'font-weight':800, fill:'#2b1400', 'text-anchor':'middle','font-family':"'JetBrains Mono', monospace"}));
+    }
+
+    // finger badge (teal)
+    if(note.finger){
+      if(lowLedger){
+        g.appendChild(svgEl('circle',{cx:lx, cy:ny, r:8, fill:'var(--teal)'}));
+        g.appendChild(svgText(lx, ny+3.2, String(note.finger), {'font-size':9.5,'font-weight':700, fill:'#fff', 'text-anchor':'middle','font-family':"'JetBrains Mono', monospace"}));
+      } else {
+        const fingerY = top + STAFF_HEIGHT + 17;
+        g.appendChild(svgEl('circle',{cx:bx, cy:fingerY, r:8, fill:'var(--teal)'}));
+        g.appendChild(svgText(bx, fingerY+3.2, String(note.finger), {'font-size':9.5,'font-weight':700, fill:'#fff', 'text-anchor':'middle','font-family':"'JetBrains Mono', monospace"}));
+      }
+    }
+  });
+}
+
+function drawFlag(g, stemX, tipY, stemUp){
+  const dy = stemUp ? 1 : -1;
+  const d = `M ${stemX} ${tipY} C ${stemX+9.5} ${tipY+8*dy}, ${stemX+10.5} ${tipY+15*dy}, ${stemX} ${tipY+19*dy}`;
+  g.appendChild(svgEl('path',{d, fill:'none', stroke:'var(--paper-ink)', 'stroke-width':2.4, 'stroke-linecap':'round'}));
+}
+
+function drawLedger(g, x, y){
+  g.appendChild(svgEl('line',{x1:x-10,y1:y,x2:x+10,y2:y,stroke:'var(--paper-ink)','stroke-width':1.2}));
+}
+
+function drawRest(g, x, top, durLetter, dotted){
+  const mid = top + STAFF_GAP*2;
+  const INK = '#1c150c'; // hard-coded (not var()) so rests always render regardless of CSS context
+  g.classList.add('rest');
+  switch(durLetter){
+    case 'w': {
+      // bar sitting on top of a line with two short legs hanging down ("table" shape)
+      const y = top + STAFF_GAP, barW=17, barH=4.5, legW=2.6, legH=6.5;
+      g.appendChild(svgEl('rect',{x:x-barW/2, y:y, width:barW, height:barH, fill:INK}));
+      g.appendChild(svgEl('rect',{x:x-barW/2, y:y+barH, width:legW, height:legH, fill:INK}));
+      g.appendChild(svgEl('rect',{x:x+barW/2-legW, y:y+barH, width:legW, height:legH, fill:INK}));
+      break;
+    }
+    case 'h': {
+      // mirror of the whole rest: bar sits under a line, legs point up ("table" upside down)
+      const y = mid, barW=17, barH=4.5, legW=2.6, legH=6.5;
+      g.appendChild(svgEl('rect',{x:x-barW/2, y:y-barH, width:barW, height:barH, fill:INK}));
+      g.appendChild(svgEl('rect',{x:x-barW/2, y:y-barH-legH, width:legW, height:legH, fill:INK}));
+      g.appendChild(svgEl('rect',{x:x+barW/2-legW, y:y-barH-legH, width:legW, height:legH, fill:INK}));
+      break;
+    }
+    case 'q':
+      // bold zigzag/lightning-bolt shape
+      g.appendChild(svgEl('path',{
+        d:`M ${x+6} ${mid-16} L ${x-5} ${mid-5} C ${x-8} ${mid-2} ${x+3} ${mid-1} ${x-1} ${mid+3}
+           L ${x-7} ${mid+11} C ${x-9} ${mid+14} ${x+1} ${mid+14} ${x-2} ${mid+18}`,
+        fill:'none', stroke:INK, 'stroke-width':3.6, 'stroke-linecap':'round', 'stroke-linejoin':'round'}));
+      break;
+    case 'e':
+      drawFlaggedRest(g, x, mid, INK, 1);
+      break;
+    case 's':
+      drawFlaggedRest(g, x, mid, INK, 2);
+      break;
+  }
+  if(dotted){
+    g.appendChild(svgEl('circle',{cx:x+14, cy:mid-2, r:2.4, fill:INK}));
+  }
+}
+
+/* eighth/sixteenth rest: a diagonal stroke with curled flag(s) near the top
+   and a single solid dot at the bottom, matching the classic glyph.
+   flagCount=2 stacks a second flag just below the first for the sixteenth rest. */
+function drawFlaggedRest(g, x, mid, INK, flagCount){
+  const topX = x+6, topY = mid - (flagCount===2 ? 17 : 13);
+  const botX = x-4, botY = mid + (flagCount===2 ? 11 : 8);
+  g.appendChild(svgEl('path',{d:`M ${topX} ${topY} L ${botX} ${botY}`, fill:'none', stroke:INK, 'stroke-width':2.8, 'stroke-linecap':'round'}));
+  const curlAt = (fx,fy)=>{
+    g.appendChild(svgEl('path',{
+      d:`M ${fx} ${fy} C ${fx+7} ${fy+1.5}, ${fx+7.5} ${fy+7.5}, ${fx+0.5} ${fy+9}`,
+      fill:'none', stroke:INK, 'stroke-width':2.4, 'stroke-linecap':'round'}));
+  };
+  curlAt(topX, topY);
+  if(flagCount===2){
+    const midX = topX + (botX-topX)*0.26, midY = topY + (botY-topY)*0.26;
+    curlAt(midX, midY);
+  }
+  g.appendChild(svgEl('circle',{cx:botX, cy:botY+2, r:3.2, fill:INK}));
+}
+
+function drawTie(svg, evA, evB, top){
+  const yA = yForPosition(top, evA.notes[0].position);
+  const yB = yForPosition(top, evB.notes[0].position);
+  const xa = evA._x, xb = evB._x;
+  const x1 = (xa!=null?xa:0)+8, x2=(xb!=null?xb:0)-8;
+  const topY = Math.min(yA,yB)-13;
+  const path = svgEl('path',{
+    d:`M ${x1} ${yA-6} Q ${(x1+x2)/2} ${topY} ${x2} ${yB-6}`,
+    fill:'none', stroke:'var(--paper-ink)', 'stroke-width':1.6
+  });
+  svg.appendChild(path);
+}
+
+/* small dashed hook shown at the edge of a note whose tie crosses into a
+   different clef pair (a full arc can't be drawn since the target lives in
+   a separately-paginated system's own SVG) */
+function drawTieStub(svg, ev, top, direction){
+  const y = yForPosition(top, ev.notes[0].position) - 6;
+  const x = ev._x;
+  const len = 22;
+  const x1 = direction==='out' ? x+8 : x-8-len;
+  const x2 = direction==='out' ? x+8+len : x-8;
+  const midY = y - 9;
+  svg.appendChild(svgEl('path',{
+    d:`M ${x1} ${y} Q ${(x1+x2)/2} ${midY} ${x2} ${y}`,
+    fill:'none', stroke:'var(--paper-ink)', 'stroke-width':1.6, 'stroke-linecap':'round'
+  }));
+}
+
+/* small pill marker drawn where a "RepeatN" token appears in the notation —
+   the referenced clef pairs aren't re-drawn here (that would duplicate the
+   whole page); this just marks the spot, and playback jumps back to those
+   pairs the requested number of times when it reaches this point. */
+function drawRepeatMarker(g, x, top, groupName){
+  const midY = top + STAFF_HEIGHT/2;
+  const label = groupName.replace('Repeat','Repeat ');
+  const w = Math.max(54, label.length*7.4);
+  g.appendChild(svgEl('rect',{x:x-w/2, y:midY-12, width:w, height:24, rx:12, ry:12, fill:'var(--repeat-purple, #6d4fc4)', stroke:'#2b1450','stroke-width':1.4}));
+  g.appendChild(svgText(x, midY+4, '\u21BB '+label, {'font-size':11,'font-weight':800, fill:'#fff', 'text-anchor':'middle','font-family':"'JetBrains Mono', monospace"}));
+}
+
+/* ---------------------------------------------------------------------- */
+/* Piano keyboard                                                          */
+/* ---------------------------------------------------------------------- */
+const WHITE_SEMIS = [0,2,4,5,7,9,11]; // C D E F G A B, within one octave
+let pianoKeyEls = {}; // midi -> element
+let pianoBadgeEls = {}; // midi -> badge element
+let pianoKeyGeom = {}; // midi -> {x:centerPx, width:px, isBlack:bool} - shared with the waterfall
+let pianoWidthPx = 0;
+
+/* a continuous "how many white keys from the very bottom" index — lets us
+   window a small, contiguous slice of keys instead of full octaves */
+function whiteKeyIndexOf(midi){
+  const oct = Math.floor(midi/12) - 1;
+  const semi = ((midi%12)+12)%12;
+  let wi = 0;
+  for(let i=0;i<WHITE_SEMIS.length;i++){ if(WHITE_SEMIS[i]<=semi) wi = i; }
+  return oct*7 + wi;
+}
+function whiteIndexInfo(wi){
+  const oct = Math.floor(wi/7);
+  const li = ((wi%7)+7)%7;
+  return {midi:(oct+1)*12+WHITE_SEMIS[li], letter:LETTERS[li], oct, li};
+}
+/* smallest contiguous white-key window (by index) that both covers every
+   note actually used and is at least targetKeys wide, centered on the
+   used notes so there's a little headroom on each side */
+function computeHandWindow(midiList, targetKeys){
+  if(!midiList.length) return null;
+  const minWI = whiteKeyIndexOf(Math.min(...midiList));
+  const maxWI = whiteKeyIndexOf(Math.max(...midiList));
+  const usedSpan = maxWI - minWI + 1;
+  const span = Math.max(targetKeys, usedSpan);
+  const padBefore = Math.floor((span-usedSpan)/2);
+  const startWI = minWI - padBefore;
+  return {startWI, endWI: startWI + span - 1};
+}
+function collectStaffMidis(staff){
+  const out = [];
+  if(!staff) return out;
+  staff.measures.flat().forEach(ev=>{
+    if(ev.type==='note' || ev.type==='chord'){
+      ev.notes.forEach(n=>out.push(n.midi));
+    }
+  });
+  return out;
+}
+
+function createWhiteKey(container, midi, letter, oct, keyLeft, WKW){
+  const key = document.createElement('div');
+  key.className = 'wkey';
+  key.style.left = keyLeft+'px';
+  key.style.width = WKW+'px';
+  key.dataset.midi = midi;
+  key.addEventListener('click', ()=>handleKeyPress(midi));
+  const badge = document.createElement('div');
+  badge.className = 'finger-badge';
+  key.appendChild(badge);
+  if(letter==='C'){
+    const lab = document.createElement('div');
+    lab.className='octave-label'; lab.textContent = 'C'+oct;
+    key.appendChild(lab);
+  }
+  container.appendChild(key);
+  pianoKeyEls[midi] = key;
+  pianoBadgeEls[midi] = badge;
+  pianoKeyGeom[midi] = {x:keyLeft+WKW/2, width:WKW, isBlack:false};
+
+  // name label is appended directly to the container (not the key) and
+  // given a top-level z-index so it always renders above black keys,
+  // even where a black key visually overlaps this white key's top edge.
+  const nameLabel = document.createElement('div');
+  nameLabel.className = 'wkey-name';
+  nameLabel.textContent = letter;
+  nameLabel.style.left = (keyLeft + WKW/2)+'px';
+  container.appendChild(nameLabel);
+}
+function createBlackKey(container, midi, keyLeft, BKW){
+  const key = document.createElement('div');
+  key.className = 'bkey';
+  key.style.left = keyLeft+'px';
+  key.style.width = BKW+'px';
+  key.dataset.midi = midi;
+  key.addEventListener('click', ()=>handleKeyPress(midi));
+  const badge = document.createElement('div');
+  badge.className = 'finger-badge';
+  badge.style.bottom = '5px';
+  key.appendChild(badge);
+  container.appendChild(key);
+  pianoKeyEls[midi] = key;
+  pianoBadgeEls[midi] = badge;
+  pianoKeyGeom[midi] = {x:keyLeft+BKW/2, width:BKW, isBlack:true};
+}
+
+/* draws one contiguous window of keys starting at pixel x=offsetX; returns
+   the x position right after the last key drawn */
+function renderKeyWindow(container, win, offsetX, WKW, BKW){
+  for(let wi=win.startWI; wi<=win.endWI; wi++){
+    const info = whiteIndexInfo(wi);
+    const keyLeft = offsetX + (wi-win.startWI)*WKW;
+    createWhiteKey(container, info.midi, info.letter, info.oct, keyLeft, WKW);
+  }
+  for(let wi=win.startWI; wi<win.endWI; wi++){
+    const li = ((wi%7)+7)%7;
+    if(li===2 || li===6) continue; // no black key after E or B
+    const oct = Math.floor(wi/7);
+    const midi = (oct+1)*12 + WHITE_SEMIS[li] + 1;
+    const keyLeft = offsetX + (wi-win.startWI+1)*WKW - BKW/2;
+    createBlackKey(container, midi, keyLeft, BKW);
+  }
+  return offsetX + (win.endWI-win.startWI+1)*WKW;
+}
+
+/* Builds the keyboard for ONE system (clef pair) at a time, windowed to a
+   small, big-key slice (~7-10 keys) instead of the whole piece's range —
+   showing every key would make each one tiny. When both a treble and a
+   bass staff have notes, the keyboard splits into two hand-sized groups
+   (bass on the left, treble on the right) with a divider between them. */
+function buildPianoForSystem(sysIndex){
+  const sys = currentLayout && currentLayout.systems[sysIndex];
+  const container = document.getElementById('piano');
+  container.innerHTML = '';
+  pianoKeyEls = {}; pianoBadgeEls = {}; pianoKeyGeom = {};
+  container.style.position = 'relative';
+
+  const trebleMidis = sys ? collectStaffMidis(sys.treble) : [];
+  const bassMidis = sys ? collectStaffMidis(sys.bass) : [];
+  const hasBoth = trebleMidis.length>0 && bassMidis.length>0;
+
+  const PAD = 14;
+  const DIVIDER_GAP = hasBoth ? 26 : 0;
+
+  let bassWindow = null, trebleWindow = null;
+  if(hasBoth){
+    bassWindow = computeHandWindow(bassMidis, 5);
+    trebleWindow = computeHandWindow(trebleMidis, 7);
+  } else if(trebleMidis.length){
+    trebleWindow = computeHandWindow(trebleMidis, 9);
+  } else if(bassMidis.length){
+    bassWindow = computeHandWindow(bassMidis, 9);
+  } else {
+    const midC = whiteKeyIndexOf(60);
+    trebleWindow = {startWI: midC-4, endWI: midC+4};
+  }
+
+  const bassSpan = bassWindow ? (bassWindow.endWI-bassWindow.startWI+1) : 0;
+  const trebleSpan = trebleWindow ? (trebleWindow.endWI-trebleWindow.startWI+1) : 0;
+  const totalWhite = bassSpan + trebleSpan;
+
+  const availableWidth = container.parentElement.clientWidth || (totalWhite*46+PAD*2);
+  const WKW = Math.max(46, (availableWidth - PAD*2 - DIVIDER_GAP) / totalWhite);
+  const BKW = Math.max(26, WKW*0.58);
+
+  let x = PAD;
+  if(bassWindow) x = renderKeyWindow(container, bassWindow, x, WKW, BKW);
+  let dividerX = null;
+  if(hasBoth){ dividerX = x + DIVIDER_GAP/2 - 1.5; x += DIVIDER_GAP; }
+  if(trebleWindow) x = renderKeyWindow(container, trebleWindow, x, WKW, BKW);
+
+  if(dividerX!=null){
+    const div = document.createElement('div');
+    div.className = 'hand-divider';
+    div.style.left = dividerX+'px';
+    container.appendChild(div);
+  }
+
+  pianoWidthPx = x + PAD;
+  container.style.width = pianoWidthPx+'px';
+  container.style.height = '134px';
+
+  buildWaterfall();
+}
+
+/* ---------------------------------------------------------------------- */
+/* Waterfall (falling-note) display, aligned to the piano's own key x/width */
+/* ---------------------------------------------------------------------- */
+const WATERFALL_HEIGHT = 185;
+const WATERFALL_LOOKAHEAD = 2.6; // seconds of "preview" shown above the keys
+
+function buildWaterfall(){
+  const svg = document.getElementById('waterfallSvg');
+  svg.innerHTML = '';
+  svg.setAttribute('width', pianoWidthPx);
+  svg.setAttribute('height', WATERFALL_HEIGHT);
+  svg.setAttribute('viewBox', `0 0 ${pianoWidthPx} ${WATERFALL_HEIGHT}`);
+
+  const defs = svgEl('defs');
+  const grad = svgEl('linearGradient', {id:'wfGrad', x1:0,y1:0,x2:0,y2:1});
+  grad.appendChild(svgEl('stop', {offset:'0%','stop-color':'var(--waterfall-blue-bright)'}));
+  grad.appendChild(svgEl('stop', {offset:'100%','stop-color':'var(--waterfall-blue)'}));
+  defs.appendChild(grad);
+  const gradHeld = svgEl('linearGradient', {id:'wfGradHeld', x1:0,y1:0,x2:0,y2:1});
+  gradHeld.appendChild(svgEl('stop', {offset:'0%','stop-color':'#ff8a75'}));
+  gradHeld.appendChild(svgEl('stop', {offset:'100%','stop-color':'var(--rose)'}));
+  defs.appendChild(gradHeld);
+  svg.appendChild(defs);
+
+  // faint hit-line right above the keys
+  svg.appendChild(svgEl('line',{x1:0,y1:WATERFALL_HEIGHT-1,x2:pianoWidthPx,y2:WATERFALL_HEIGHT-1,stroke:'var(--brass)','stroke-width':1.5,opacity:.55}));
+}
+
+/* creates one falling block per (note,key) pair in the plan; returns the
+   list of {tStart,tEnd,el...} records the play loop will animate each frame */
+function buildWaterfallNotes(plan){
+  const svg = document.getElementById('waterfallSvg');
+  svg.querySelectorAll('.wf-note').forEach(el=>el.remove());
+  const blocks = [];
+
+  plan.visualEvents.forEach(v=>{
+    v.keyMidis.forEach((midi,i)=>{
+      const geom = pianoKeyGeom[midi];
+      if(!geom) return;
+      const finger = v.fingers[i];
+      const letter = v.letters ? v.letters[i] : '';
+      const capsuleW = Math.max(10, geom.width - (geom.isBlack?4:6));
+
+      const held = !!v.held;
+      const g = svgEl('g', {class:'wf-note'});
+      const rect = svgEl('rect', {
+        x:geom.x-capsuleW/2, y:-9999, width:capsuleW, height:0, rx:capsuleW/2, ry:capsuleW/2,
+        fill: held ? 'url(#wfGradHeld)' : 'url(#wfGrad)',
+        stroke: held ? '#ffb3a3' : 'var(--waterfall-blue-bright)', 'stroke-width':1
+      });
+      g.appendChild(rect);
+
+      // no background badge — just bold outlined text sitting directly on
+      // the bar, so the bar's own color is never hidden underneath it
+      const letterSize = Math.max(11, Math.min(19, capsuleW*0.52));
+      const letterText = svgText(geom.x, -9999, letter, {
+        'font-size':letterSize, 'font-weight':900, fill:'#ffffff',
+        stroke:'#0b0f1a', 'stroke-width':2.6, 'paint-order':'stroke fill',
+        'text-anchor':'middle', 'font-family':"'JetBrains Mono', monospace"
+      });
+      g.appendChild(letterText);
+
+      let fingerText=null;
+      let fingerSize = 0;
+      if(finger!=null){
+        fingerSize = Math.max(9, Math.min(13, capsuleW*0.36));
+        fingerText = svgText(geom.x, -9999, String(finger), {
+          'font-size':fingerSize, 'font-weight':900, fill:'#ffe37a',
+          stroke:'#0b0f1a', 'stroke-width':2, 'paint-order':'stroke fill',
+          'text-anchor':'middle', 'font-family':"'JetBrains Mono', monospace"
+        });
+        g.appendChild(fingerText);
+      }
+      svg.appendChild(g);
+
+      // half-height of the stacked label (letter, plus finger above it if
+      // present) — used to keep the whole label clamped inside its own bar
+      const halfH = finger!=null ? (letterSize*0.5 + fingerSize + 4) : letterSize*0.55;
+      blocks.push({tStart:v.tStart, tEnd:v.tEndFull, rect, letterText, fingerText, letterSize, halfH, held});
+    });
+  });
+  return blocks;
+}
+
+/* called every animation frame during playback; elapsed is the ABSOLUTE
+   position (in seconds) within the whole piece's timeline. */
+function updateWaterfall(blocks, elapsed){
+  const PPS = WATERFALL_HEIGHT / WATERFALL_LOOKAHEAD;
+  const hitY = WATERFALL_HEIGHT;
+  blocks.forEach(b=>{
+    const bottomY = hitY - (b.tStart-elapsed)*PPS;
+    const topY = hitY - (b.tEnd-elapsed)*PPS;
+    if(bottomY < -20 || topY > WATERFALL_HEIGHT+20){
+      b.rect.setAttribute('height', 0);
+      b.rect.setAttribute('y', -9999);
+      b.letterText.setAttribute('y', -9999);
+      if(b.fingerText) b.fingerText.setAttribute('y', -9999);
+      return;
+    }
+    // keep the bar at its full, real duration length (no shrinking)
+    const h = Math.max(5, bottomY-topY);
+    b.rect.setAttribute('y', topY);
+    b.rect.setAttribute('height', h);
+
+    // keep the label fully INSIDE this note's own bar, biased toward the
+    // bottom (leading) edge, so it never bridges into the bar above it
+    const margin = b.halfH + 3;
+    let labelY = bottomY - margin;
+    labelY = Math.min(labelY, WATERFALL_HEIGHT - margin);
+    labelY = Math.max(labelY, topY + margin);
+    b.letterText.setAttribute('y', labelY + b.letterSize*0.35);
+    if(b.fingerText){
+      b.fingerText.setAttribute('y', labelY - b.letterSize*0.55);
+    }
+
+    const active = elapsed>=b.tStart && elapsed<b.tEnd;
+    const restStroke = b.held ? '#ffb3a3' : 'var(--waterfall-blue-bright)';
+    b.rect.setAttribute('stroke', active ? 'var(--brass-bright)' : restStroke);
+    b.rect.setAttribute('stroke-width', active ? 2.2 : 1);
+  });
+}
+
+/* ---------------------------------------------------------------------- */
+/* Audio                                                                   */
+/* ---------------------------------------------------------------------- */
+let audioCtx = null;
+let masterGain = null; // all sound routes through this so mute is instant and live
+let muted = false;
+function ensureCtx(){
+  if(!audioCtx || audioCtx.state==='closed'){
+    audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = muted ? 0 : 1;
+    masterGain.connect(audioCtx.destination);
+  }
+  return audioCtx;
+}
+function midiToFreq(midi){ return 440 * Math.pow(2, (midi-69)/12); }
+
+function playTone(ctx, midi, startTime, duration){
+  const freq = midiToFreq(midi);
+  const osc = ctx.createOscillator();
+  osc.type = 'triangle';
+  osc.frequency.value = freq;
+  const osc2 = ctx.createOscillator();
+  osc2.type = 'sine';
+  osc2.frequency.value = freq*2;
+  const gain = ctx.createGain();
+  const gain2 = ctx.createGain();
+  const attack = 0.012, release = Math.min(0.14, duration*0.4);
+  const peak = 0.34, peak2 = 0.06;
+  gain.gain.setValueAtTime(0, startTime);
+  gain.gain.linearRampToValueAtTime(peak, startTime+attack);
+  gain.gain.linearRampToValueAtTime(peak*0.55, startTime+Math.min(duration*0.6, duration));
+  gain.gain.linearRampToValueAtTime(0, startTime+duration+release);
+  gain2.gain.setValueAtTime(0, startTime);
+  gain2.gain.linearRampToValueAtTime(peak2, startTime+attack);
+  gain2.gain.linearRampToValueAtTime(0, startTime+duration*0.5);
+  osc.connect(gain).connect(masterGain);
+  osc2.connect(gain2).connect(masterGain);
+  osc.start(startTime); osc.stop(startTime+duration+release+0.02);
+  osc2.start(startTime); osc2.stop(startTime+duration*0.5+0.05);
+}
+function previewTone(midi){
+  const ctx = ensureCtx();
+  if(ctx.state==='suspended') ctx.resume();
+  playTone(ctx, midi, ctx.currentTime+0.01, 0.4);
+}
+
+/* "Play Soundless" state: playback runs (waterfall, clef-following, the
+   metronome arm) without any automatic note/click audio — the learner
+   supplies the sound themselves by pressing the right key at the right
+   time. liveActiveMidis is refreshed every animation frame during
+   playback so a key press can check "is there a falling note on me right
+   now" before deciding whether to make a sound. */
+let soundlessActive = false;
+let liveActiveMidis = new Map();
+function handleKeyPress(midi){
+  if(playing && soundlessActive){
+    if(liveActiveMidis && liveActiveMidis.has(midi)) previewTone(midi);
+    return; // no feedback sound for a press that doesn't match a falling note
+  }
+  previewTone(midi);
+}
+function scheduleClick(ctx, time, accent){
+  const osc = ctx.createOscillator();
+  osc.type = 'square';
+  osc.frequency.value = accent ? 1500 : 1000;
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.001, time);
+  gain.gain.exponentialRampToValueAtTime(accent?0.22:0.14, time+0.004);
+  gain.gain.exponentialRampToValueAtTime(0.0001, time+0.05);
+  osc.connect(gain).connect(masterGain);
+  osc.start(time); osc.stop(time+0.06);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Playback plan                                                           */
+/* ---------------------------------------------------------------------- */
+
+/* expands the declared system order into the actual PLAYBACK order,
+   splicing in repeated groups (from "RepeatN: Clef1, Clef2...") right
+   after the system that references them. The same layout-system object
+   can appear more than once — its notes/svgEl get reused, just scheduled
+   at additional points in the timeline. */
+function buildPlaySequence(layout, score){
+  const byNumber = {};
+  layout.systems.forEach(s=>{ byNumber[s.number] = s; });
+  const seq = [];
+  layout.systems.forEach(sys=>{
+    seq.push(sys);
+    const directives = (score.systemRepeatDirectives && score.systemRepeatDirectives[sys.number]) || [];
+    directives.forEach(d=>{
+      const groupNums = (score.repeatGroups && score.repeatGroups[d.groupName]) || [];
+      for(let rep=0; rep<d.count; rep++){
+        groupNums.forEach(num=>{
+          const target = byNumber[num];
+          if(target) seq.push(target);
+        });
+      }
+    });
+  });
+  return seq;
+}
+
+function computePlaybackPlan(layout, score, bpm){
+  const secPerQuarter = 60/bpm;
+  const beatUnit = 4/score.timeSig.den; // quarter-units per beat
+  const audioEvents = [];
+  const visualEvents = [];
+  const systemRanges = [];
+  let running = 0; // quarters, advances across the expanded play sequence
+
+  const playSeq = buildPlaySequence(layout, score);
+  playSeq.forEach(sys=>{
+    const sysStart = running;
+    let sysDur = 0;
+    [sys.treble, sys.bass].forEach(staff=>{
+      if(!staff) return;
+      let cursor = sysStart;
+      const flat = staff.measures.flat();
+      flat.forEach(ev=>{
+        const du = durUnitsOf(ev);
+        if(ev.type==='repeat'){ cursor += du; return; } // marker only, no audio/visual timing of its own
+        const tStart = cursor*secPerQuarter;
+        const evSec = du*secPerQuarter;
+        // leave a tiny visual gap before the next note so consecutive
+        // repeated notes (same pitch, no "tie") clearly flash separately
+        // instead of reading as one continuous held note. Real ties
+        // (tieToNext) must stay gapless since they ARE one sustained note.
+        const gap = ev.tieToNext ? 0 : Math.min(0.07, evSec*0.3);
+        if(ev.type!=='rest'){
+          if(!ev.tieFromPrev){
+            let totalDur = du;
+            let chain = ev;
+            while(chain.tieToNext && chain._next){ chain = chain._next; totalDur += durUnitsOf(chain); }
+            ev.notes.forEach(n=>{
+              audioEvents.push({midi:n.midi, start:tStart, dur: totalDur*secPerQuarter});
+            });
+          }
+          visualEvents.push({
+            tStart, tEnd: tStart+evSec-gap, tEndFull: tStart+evSec,
+            svgEl: ev.svgEl,
+            keyMidis: ev.notes.map(n=>n.midi),
+            fingers: ev.notes.map(n=>n.finger),
+            letters: ev.notes.map(n=>n.letter + (n.accidental==='sharp'?'\u266F':n.accidental==='flat'?'\u266D':'')),
+            held: !!ev.tieFromPrev
+          });
+        } else {
+          visualEvents.push({tStart, tEnd: tStart+evSec-gap, tEndFull: tStart+evSec, svgEl: ev.svgEl, keyMidis:[], fingers:[], letters:[]});
+        }
+        cursor += du;
+      });
+      sysDur = Math.max(sysDur, cursor - sysStart);
+    });
+    if(sysDur<=0) sysDur = score.beatsPerMeasure;
+    systemRanges.push({start:sysStart, end:sysStart+sysDur, index:sys.index});
+    running += sysDur;
+  });
+
+  const totalQuarters = running;
+  const totalBeats = Math.max(1, Math.ceil(totalQuarters/beatUnit));
+  const clicks = [];
+  for(let k=0;k<=totalBeats;k++){
+    clicks.push({t:k*beatUnit*secPerQuarter, accent:(k % score.timeSig.num)===0});
+  }
+  return {
+    audioEvents, visualEvents, clicks, systemRanges,
+    secPerQuarter, beatDurationSec: beatUnit*secPerQuarter,
+    totalDurationSec: totalQuarters*secPerQuarter,
+    beatsPerMeasure: score.beatsPerMeasure
+  };
+}
+
+/* ---------------------------------------------------------------------- */
+/* App state / wiring                                                      */
+/* ---------------------------------------------------------------------- */
+let currentScore = null;
+let currentLayout = null;
+let currentSystemIndex = 0;
+let playing = false;
+let rafId = null;
+
+const scoreInput = document.getElementById('scoreInput');
+const statusBox = document.getElementById('statusBox');
+const tempoInput = document.getElementById('tempoInput');
+const tempoVal = document.getElementById('tempoVal');
+const playBtn = document.getElementById('playBtn');
+const stopBtn = document.getElementById('stopBtn');
+const soundlessBtn = document.getElementById('soundlessBtn');
+const muteBtn = document.getElementById('muteBtn');
+const metroStatus = document.getElementById('metroStatus');
+
+scoreInput.value = DEFAULT_SCORE;
+document.getElementById('legendExample').textContent = DEFAULT_SCORE;
+
+function setStatus(msg, isError){
+  statusBox.textContent = msg;
+  statusBox.classList.toggle('error', !!isError);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Song list — loaded from song.txt next to this HTML file, if present    */
+/* ---------------------------------------------------------------------- */
+function parseSongFile(text){
+  const lines = text.split('\n');
+  const songs = [];
+  let current = null;
+  lines.forEach(line=>{
+    const m = line.match(/^\s*Title\s*:\s*(.*)$/i);
+    if(m){
+      if(current) songs.push(current);
+      current = {title: m[1].trim(), lines: []};
+    } else if(current){
+      current.lines.push(line);
+    }
+  });
+  if(current) songs.push(current);
+  return songs
+    .map(s=>({title:s.title, notation:s.lines.join('\n').trim()}))
+    .filter(s=>s.title && s.notation);
+}
+
+function renderSongLinks(songs){
+  const panel = document.getElementById('songListPanel');
+  const container = document.getElementById('songLinks');
+  container.innerHTML = '';
+  if(!songs.length) return;
+  songs.forEach(song=>{
+    const a = document.createElement('a');
+    a.href = '#';
+    a.className = 'song-link';
+    a.textContent = song.title;
+    a.addEventListener('click', (e)=>{
+      e.preventDefault();
+      document.querySelectorAll('.song-link').forEach(el=>el.classList.remove('active'));
+      a.classList.add('active');
+      scoreInput.value = song.notation;
+      doRender();
+    });
+    container.appendChild(a);
+  });
+  panel.style.display = '';
+}
+
+function loadSongFile(){
+  fetch('file:///C:/Users/PC/Downloads/song.txt')
+    .then(r=>{ if(!r.ok) throw new Error('song.txt not found'); return r.text(); })
+    .then(text=>renderSongLinks(parseSongFile(text)))
+    .catch(()=>{ /* no song.txt next to this file — nothing to show, stay quiet */ });
+}
+
+function doRender(){
+  const raw = scoreInput.value;
+  try{
+    const score = parseScore(raw);
+    const layout = renderScore(score);
+    currentScore = score;
+    currentLayout = layout;
+    currentSystemIndex = 0;
+    buildPianoForSystem(0);
+    setStatus(`Parsed OK — ${score.timeSig.num}/${score.timeSig.den} time, ${layout.systems.length} pair(s) of staves.`);
+    playBtn.disabled = false;
+  }catch(err){
+    setStatus('Parse error: '+err.message, true);
+    playBtn.disabled = true;
+  }
+}
+
+document.getElementById('renderBtn').addEventListener('click', doRender);
+document.getElementById('resetBtn').addEventListener('click', ()=>{ scoreInput.value = DEFAULT_SCORE; doRender(); });
+
+tempoInput.addEventListener('input', ()=>{ tempoVal.textContent = tempoInput.value+' BPM'; });
+
+/* ---- metronome svg build ---- */
+const metroSvg = document.getElementById('metroSvg');
+function buildMetronome(){
+  metroSvg.innerHTML = '';
+  // wooden casing, pivot sits at its top so the arm has open space to
+  // swing up and to the right (its only range of motion: 0deg-90deg).
+  metroSvg.appendChild(svgEl('polygon',{points:'14,106 56,106 47,62 23,62', fill:'#4a2f1a', stroke:'#2c1a0c','stroke-width':2}));
+  metroSvg.appendChild(svgEl('polygon',{points:'19,100 51,100 44,68 26,68', fill:'#5c3c22'}));
+  // reference line at the "horizontal" trigger position (roughly where
+  // the arm sits when resting at 90deg, i.e. pointing straight right)
+  metroSvg.appendChild(svgEl('line',{x1:34,y1:98,x2:112,y2:98, stroke:'var(--paper-line)','stroke-width':1,'stroke-dasharray':'2 3',opacity:.5}));
+
+  const pivotX = 34, pivotY = 98;
+  const g = svgEl('g',{id:'metroStickG'});
+  g.appendChild(svgEl('line',{x1:pivotX,y1:pivotY,x2:pivotX,y2:28, stroke:'var(--brass-bright)','stroke-width':2.4,'stroke-linecap':'round'}));
+  g.appendChild(svgEl('circle',{cx:pivotX,cy:64,r:5, fill:'var(--brass)'}));
+  g.appendChild(svgEl('circle',{cx:pivotX,cy:28,r:4, fill:'var(--brass-bright)'}));
+  metroSvg.appendChild(g);
+  metroSvg.appendChild(svgEl('circle',{cx:pivotX,cy:pivotY,r:3, fill:'var(--brass-bright)'}));
+  return {g, pivotX, pivotY};
+}
+let metro = buildMetronome();
+setMetroAngle(90); // resting/trigger position = horizontal
+
+function setMetroAngle(deg){
+  metro.g.setAttribute('transform', `rotate(${deg} ${metro.pivotX} ${metro.pivotY})`);
+}
+
+/* ---- playback ---- */
+function clearHighlights(){
+  document.querySelectorAll('.note-active').forEach(el=>el.classList.remove('note-active'));
+  document.querySelectorAll('.key-active').forEach(el=>el.classList.remove('key-active'));
+  document.querySelectorAll('.finger-badge.show').forEach(el=>el.classList.remove('show'));
+}
+
+function updateButtons(){
+  playBtn.disabled = playing || !currentScore;
+  soundlessBtn.disabled = playing || !currentScore;
+  stopBtn.disabled = !playing;
+}
+
+function onPlay(soundlessMode){
+  if(!currentScore) doRender();
+  if(!currentScore) return;
+  soundlessActive = !!soundlessMode;
+  buildPianoForSystem(currentSystemIndex); // keyboard is windowed to whichever pair we're starting from
+  const bpm = parseInt(tempoInput.value,10);
+  const plan = computePlaybackPlan(currentLayout, currentScore, bpm);
+  const ctx = ensureCtx();
+  if(ctx.state==='suspended') ctx.resume();
+  const startTime = ctx.currentTime + 0.25;
+
+  // start playback from whichever pair is currently visible on screen —
+  // find its EARLIEST occurrence in the (possibly repeat-expanded) timeline
+  const matchingRanges = plan.systemRanges.filter(r=>r.index===currentSystemIndex);
+  const startRange = matchingRanges[0] || plan.systemRanges[0] || {start:0};
+  const offsetSec = startRange.start * plan.secPerQuarter;
+  const remainingSec = Math.max(0, plan.totalDurationSec - offsetSec);
+
+  if(!soundlessActive){
+    plan.audioEvents.forEach(e=>{
+      if(e.start < offsetSec - 1e-9) return; // belongs to a pair before the one we're starting from
+      playTone(ctx, e.midi, startTime+(e.start-offsetSec), Math.max(0.05,e.dur*0.94));
+    });
+    plan.clicks.forEach(c=>{
+      if(c.t < offsetSec - 1e-9) return;
+      scheduleClick(ctx, startTime+(c.t-offsetSec), c.accent);
+    });
+  }
+
+  playing = true;
+  updateButtons();
+  metroStatus.textContent = soundlessActive ? 'Soundless — hit the keys!' : 'Playing…';
+
+  const wfBlocks = buildWaterfallNotes(plan);
+
+  // metronome geometry: hand stays on the right, sweeping only between
+  // 0deg and 90deg (measured from vertical). 90deg = "horizontal" = the
+  // trigger/tick position marking the start of every beat. It swings up
+  // to 0deg (vertical) at the beat's midpoint (an eighth note in), then
+  // back down to horizontal for the next beat/tick — two movements per beat.
+  const REST_ANGLE = 90, PEAK_ANGLE = 0;
+  const centerAngle = (REST_ANGLE+PEAK_ANGLE)/2;
+  const ampAngle = (REST_ANGLE-PEAK_ANGLE)/2;
+
+  function frame(){
+    if(!playing) return;
+    const elapsed = ctx.currentTime - startTime;
+    if(elapsed < 0){ rafId = requestAnimationFrame(frame); return; }
+    if(elapsed > remainingSec + 0.4){
+      onStop();
+      return;
+    }
+    const absElapsed = elapsed + offsetSec; // absolute position in the whole piece's timeline
+
+    const beatPhase = (absElapsed % plan.beatDurationSec) / plan.beatDurationSec;
+    const angle = centerAngle + ampAngle*Math.cos(2*Math.PI*beatPhase);
+    setMetroAngle(angle);
+
+    updateWaterfall(wfBlocks, absElapsed);
+
+    // aggregate which keys/notes should be active this frame BEFORE touching
+    // the DOM, so overlapping events never fight over the same key/note.
+    const activeMidis = new Map();   // midi -> finger (first one wins)
+    const activeSvgEls = new Set();
+    plan.visualEvents.forEach(v=>{
+      if(absElapsed>=v.tStart && absElapsed<v.tEnd){
+        if(v.svgEl) activeSvgEls.add(v.svgEl);
+        v.keyMidis.forEach((midi,i)=>{
+          if(!activeMidis.has(midi) || (activeMidis.get(midi)==null && v.fingers[i]!=null)){
+            activeMidis.set(midi, v.fingers[i]);
+          }
+        });
+      }
+    });
+    liveActiveMidis = activeMidis; // exposed for the "Soundless" key-hit feedback
+
+    for(const midi in pianoKeyEls){
+      const keyEl = pianoKeyEls[midi];
+      const badge = pianoBadgeEls[midi];
+      if(activeMidis.has(Number(midi))){
+        keyEl.classList.add('key-active');
+        const finger = activeMidis.get(Number(midi));
+        if(badge){
+          if(finger!=null){ badge.textContent = finger; badge.classList.add('show'); }
+          else badge.classList.remove('show');
+        }
+      } else {
+        keyEl.classList.remove('key-active');
+        if(badge) badge.classList.remove('show');
+      }
+    }
+    document.querySelectorAll('.note-group.note-active').forEach(el=>{
+      if(!activeSvgEls.has(el)) el.classList.remove('note-active');
+    });
+    activeSvgEls.forEach(el=>el.classList.add('note-active'));
+
+    // figure out which system is currently sounding, auto-follow it
+    const quarters = absElapsed/plan.secPerQuarter;
+    let matchedRange = plan.systemRanges[plan.systemRanges.length-1];
+    for(let i=0;i<plan.systemRanges.length;i++){
+      const r = plan.systemRanges[i];
+      if(quarters>=r.start && quarters<r.end){ matchedRange = r; break; }
+    }
+    const sysIdx = matchedRange ? matchedRange.index : 0;
+    if(sysIdx !== currentSystemIndex) showSystem(sysIdx);
+
+    const range = matchedRange;
+    const sys = currentLayout.systems[sysIdx];
+    if(range && sys){
+      const localQuarters = quarters - range.start;
+      const bpMeasure = plan.beatsPerMeasure;
+      const measureIdx = Math.floor(localQuarters/bpMeasure);
+      const phaseInMeasure = (localQuarters - measureIdx*bpMeasure)/bpMeasure;
+      const x = currentLayout.leftMargin + measureIdx*sys.mw + phaseInMeasure*sys.mw;
+      sys.playhead.setAttribute('x1', x);
+      sys.playhead.setAttribute('x2', x);
+      sys.playhead.setAttribute('opacity', 0.85);
+    }
+
+    rafId = requestAnimationFrame(frame);
+  }
+  rafId = requestAnimationFrame(frame);
+}
+
+function onStop(){
+  playing = false;
+  soundlessActive = false;
+  liveActiveMidis = new Map();
+  if(rafId) cancelAnimationFrame(rafId);
+  if(audioCtx){ try{ audioCtx.close(); }catch(e){} audioCtx = null; masterGain = null; }
+  clearHighlights();
+  setMetroAngle(90);
+  metroStatus.textContent = 'Idle';
+  if(currentLayout) currentLayout.systems.forEach(s=>s.playhead.setAttribute('opacity', 0));
+  document.querySelectorAll('#waterfallSvg .wf-note').forEach(el=>el.remove());
+  updateButtons();
+}
+
+playBtn.addEventListener('click', ()=>onPlay(false));
+soundlessBtn.addEventListener('click', ()=>onPlay(true));
+stopBtn.addEventListener('click', onStop);
+
+function updateMuteBtn(){
+  muteBtn.textContent = muted ? '🔇' : '🔊';
+  muteBtn.setAttribute('aria-label', muted ? 'Unmute' : 'Mute');
+  muteBtn.title = muted
+    ? 'Sound muted — the metronome, waterfall, and highlights keep playing. Click to unmute.'
+    : 'Mute sound (visuals keep playing) — handy for practicing on a real piano.';
+}
+muteBtn.addEventListener('click', ()=>{
+  muted = !muted;
+  if(masterGain && audioCtx){
+    masterGain.gain.setValueAtTime(muted ? 0 : 1, audioCtx.currentTime);
+  }
+  updateMuteBtn();
+});
+updateMuteBtn();
+
+/* ---------------------------------------------------------------------- */
+/* boot                                                                    */
+/* ---------------------------------------------------------------------- */
+doRender();
+updateButtons();
+loadSongFile();
+
+// belt-and-suspenders: some mobile browsers still offer a long-press
+// "save/share image" callout on touch-held elements even with the CSS
+// touch-action/-webkit-touch-callout rules in place, since notes are
+// often held for a while — block it outright on the interactive areas.
+['piano', 'waterfallSvg'].forEach(id=>{
+  const el = document.getElementById(id);
+  if(el) el.addEventListener('contextmenu', e=>e.preventDefault());
+});
+
+})();
+</script>
+</body>
+</html>
