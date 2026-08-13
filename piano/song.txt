@@ -1,4 +1,20 @@
-Title: Bahama Mama Key Signature: 4/4 1-sh 4-sh Treble Clef1: 0hr. 0er 2e(2) 4e(4) 4e(4) 0qr 0er 4e(4) 4e(4) 2e(2)  Treble Clef2: 3e(3) 3e(3) 0hr 2e(2) 3e(3) 4e(4) 4e(4) 4e(4) 5e(5) 4e(4) 3e(3) 2e(2) 1e(1)   Treble Clef3: 0e(1) 0e(1) 0hr 0er 2e(2) 4e(4) 4e(4) 0qr 0er 4e(4) 4e(4) 2e(2)  Treble Clef4: 3e(3) 3e(3) 0hr 2e(2) 3e(3) 4e(4) 4e(4) 4e(4) 5e(5) 4e(4) 3e(3) 2e(2) 1e(1)
- Title: Rasputin Key Signature: 4/4 Treble Clef1: -1e(1) 3e(3) 3e(3) 3e(3) 3q(3) 3e(3) 3e(3)   4e(4) 5e(5) 4e(4) 3e(3) 3q(3) 0e(1) 1e(2) Bass Clef1: 4q(1) 1q(4) 4q(1) 1q(4)   4q(1) 1q(4) 4q(1) 1q(4) Treble Clef2: 2q(3) 2q(3) 2q(3) 0e(1) 1e(2)    2e(3) 2e(3) 1e(2) 0e(1) -1q(1) 0qr Bass Clef2: 0q(5) 4q(1)  0q(5) 4q(1)  1q(4) sh-3q(2) 4q(1) 1q(4)
-Title: Beat It Key Signature: 4/4 4-sh Treble Clef1: 0er 0e(3) 0e(3) 0e(3) -1e(2) 0e(3) -1e(2) 0e(3) 2e(5) 0e(3) -1q(2) 0q.(3) 0e(3)  Bass Clef1: {1w(5) 3w(3) 5w(1)} {1w(5) 3w(3) 5w(1)}
-Treble Clef2: 0e(3) 0e(3) 0e(3) 0e(3) 0e(3) 0e(3) -1e(2) -2e(1) -1e(2) -2e(1) 0q(3) 0qr 0q(3) Treble Clef3: -1e(2) -2e(1) -4e(2) -5e(1) -4q(2) -4e(2) -4e(2) -3e(4) -4e(3) -5e(2) -7e(1) -5e(2) -4e(3)
+Title: Bahama Mama
+Key Signature: 4/4 1-sh 4-sh
+Treble Clef1: 0hr. 0er 2e(2) 4e(4) 4e(4) 0qr 0er 4e(4) 4e(4) 2e(2)
+Treble Clef2: 3e(3) 3e(3) 0hr 2e(2) 3e(3) 4e(4) 4e(4) 4e(4) 5e(5) 4e(4) 3e(3) 2e(2) 1e(1)
+Treble Clef3: 0e(1) 0e(1) 0hr 0er 2e(2) 4e(4) 4e(4) 0qr 0er 4e(4) 4e(4) 2e(2)
+Treble Clef4: 3e(3) 3e(3) 0hr 2e(2) 3e(3) 4e(4) 4e(4) 4e(4) 5e(5) 4e(4) 3e(3) 2e(2) 1e(1)
+
+Title: Rasputin
+Key Signature: 4/4
+Treble Clef1: -1e(1) 3e(3) 3e(3) 3e(3) 3q(3) 3e(3) 3e(3) 4e(4) 5e(5) 4e(4) 3e(3) 3q(3) 0e(1) 1e(2)
+Bass Clef1: 4q(1) 1q(4) 4q(1) 1q(4) 4q(1) 1q(4) 4q(1) 1q(4)
+Treble Clef2: 2q(3) 2q(3) 2q(3) 0e(1) 1e(2) 2e(3) 2e(3) 1e(2) 0e(1) -1q(1) 0qr
+Bass Clef2: 0q(5) 4q(1) 0q(5) 4q(1) 1q(4) sh-3q(2) 4q(1) 1q(4)
+
+Title: Beat It
+Key Signature: 4/4 4-sh
+Treble Clef1: 0er 0e(3) 0e(3) 0e(3) -1e(2) 0e(3) -1e(2) 0e(3) 2e(5) 0e(3) -1q(2) 0q.(3) 0e(3)
+Bass Clef1: {1w(5) 3w(3) 5w(1)} {1w(5) 3w(3) 5w(1)}
+Treble Clef2: 0e(3) 0e(3) 0e(3) 0e(3) 0e(3) 0e(3) -1e(2) -2e(1) -1e(2) -2e(1) 0q(3) 0qr 0q(3)
+Treble Clef3: -1e(2) -2e(1) -4e(2) -5e(1) -4q(2) -4e(2) -4e(2) -3e(4) -4e(3) -5e(2) -7e(1) -5e(2) -4e(3)
