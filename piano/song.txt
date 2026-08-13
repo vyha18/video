@@ -1,18 +1,56 @@
-Title: Bahama Mama
+Title: Baby Shark
+Key Signature: 4/4
+Treble Clef1: -2h(1) -1h(2) 1q(4) 1q(4) 1q(4) 1e(4) 1e(4) tie 1e(4) 1e(4) 1q(4) -2q(1) -1q(2)  
+Treble Clef2: 1q(4) 1q(4) 1q(4) 1e(4) 1e(4) tie 1e(4) 1e(4) 1q(4) -2q(1) -1q(2) 1q(4) 1q(4) 1q(4) 1e(4) 1e(4) tie 
+Treble Clef3: 1e(4) 1e(4) 1q(4) 1q(4) 1q(4) 0h(3) 0hr -2h(2) -1h(2)
+Treble Clef4: 1q(4) 1q(4) 1q(4) 1e(4) 1e(4) tie 1e(4) 1e(4) 1q(4) -2q(1) -1q(2) 1q(4) 1q(4) 1q(4) 1e(4) 1e(4) tie 
+Treble Clef5: 1e(4) 1e(4) 1q(4) -2q(1) -1q(2) 1q(4) 1q(4) 1q(4) 1e(4) 1e(4) tie 1e(4) 1e(4) 1q(4) 1q(4) 1q(4) 
+Treble Clef6: 0h(3) 0hr
+Title: Bahama Mama (Boney M)
 Key Signature: 4/4 1-sh 4-sh
-Treble Clef1: 0hr. 0er 2e(2) 4e(4) 4e(4) 0qr 0er 4e(4) 4e(4) 2e(2)
-Treble Clef2: 3e(3) 3e(3) 0hr 2e(2) 3e(3) 4e(4) 4e(4) 4e(4) 5e(5) 4e(4) 3e(3) 2e(2) 1e(1)
+Treble Clef1: 0hr. 0er 2e(2) 4e(4) 4e(4) 0qr 0er 4e(4) 4e(4) 2e(2) 
+Treble Clef2: 3e(3) 3e(3) 0hr 2e(2) 3e(3) 4e(4) 4e(4) 4e(4) 5e(5) 4e(4) 3e(3) 2e(2) 1e(1) 
 Treble Clef3: 0e(1) 0e(1) 0hr 0er 2e(2) 4e(4) 4e(4) 0qr 0er 4e(4) 4e(4) 2e(2)
 Treble Clef4: 3e(3) 3e(3) 0hr 2e(2) 3e(3) 4e(4) 4e(4) 4e(4) 5e(5) 4e(4) 3e(3) 2e(2) 1e(1)
-Title: Rasputin
+Treble Clef5: 0e(2) 0e(2) 0qr 0er 0e(2) 0e(2) 0e(2) -1e(1) -1e(1) -1e(1) -1e(1) 6e(5) 6e(5) 6e(5) 5e(4)  
+Treble Clef6: 4q(3) 5e(4) 4e(3) tie 4q(3) 0qr 3e(2) 3e(2) 3e(2) 4e(3) 5q(4) 3e(2) 4e(3) tie
+Treble Clef7: 4h(3) 0qr. 4e(3) 3e(2) 3e(2) 3e(2) 4e(3) 5q(4) 3e(2) 4e(3) tie
+Treble Clef8: 4e(3) 2q(1) 0e(1) tie 0q(1) 0er 0e(1) 1e(2) 1e(2) 1e(2) 1e(2) 1q(2) 1e(2) 4e(5) tie
+Treble Clef9: 4h(5) 0qr. 2e(3) 4e(5) 4e(5) 0qr 0er 4e(5) 4e(5) 2e(3)
+Treble Clef10: 3e(4) 3e(4) 0hr 2e(3) 3e(4) 4e(5) 4e(5) 4e(5) 5e(5) 4e(5) 3e(4) 2e(3) 1e(2)
+Treble Clef11: 0e(1) 0e(1) 0hr 0er 2e(3) 4e(5) 4e(5) 0qr 0er 4e(5) 4e(5) 2e(3)
+Treble Clef12: 3e(4) 3e(4) 0hr 2e(3) 3e(4) 4e(5)  4e(5) 4e(5)  5e(5)  4e(5)  3e(4)  2e(3)  1e(2)
+Treble Clef13: 0e(1)  0e(1) 0qr 0hr 0hr. 0er 2e(2)
+Treble Clef14: 4e(4) 4e(4) 0qr 0er 4e(4) 4e(4) 2e(2) 3e(3) 3e(3) 0hr 2e(2) 3e(3)
+Treble Clef15:  4e(4) 4e(4) 4e(4) 5e(5) 4e(4) 3e(3) 2e(2) 1e(1)  0e(1) 0e(1) 0hr 0er 2e(2)
+Treble Clef16: 4e(4) 4e(4) 0qr 0er 4e(4) 4e(4) 2e(2) 3e(3) 3e(3) 0hr 2e(2) 3e(3)
+Treble Clef17: 4e(4) 4e(4) 4e(4) 5e(5) 4e(4) 3e(3) 2e(2) 1e(1) 0e(2) 0e(2) 0qr 0er 0e(2) 0e(2) 0e(2)
+Treble Clef18: -1e(1) -1e(1) -1e(1) -1e(1) 6e(5) 6e(5) 6e(5) 5e(4) 4q(3) 5e(4) 4e(3) tie 4q(3) 0qr
+Treble Clef19: 3e(2) 3e(2) 3e(2) 4e(3) 5q(4) 3e(2) 4e(3) tie 4h(3) 0qr. 4e(3)
+Treble Clef20: 3e(2) 3e(2) 3e(2) 4e(3) 5q(4) 3e(2) 4e(3) tie 4e(3) 2q(1) 0e(1) tie 0q(1) 0er 0e(1)
+Treble Clef21: 1e(2) 1e(2) 1e(2) 1e(2) 1q(2) 1e(2) 4e(5) tie 4h(5) 0qr. 2e(3)
+Treble Clef22: 4e(5) 4e(5) 0qr 0er 4e(5) 4e(5) 2e(3) 3e(4) 3e(4) 0hr 2e(3) 3e(4)
+Treble Clef23: 4e(5) 4e(5) 4e(5) 5e(5) 4e(5) 3e(4) 2e(3) 1e(2) 0e(1) 0e(1) 0hr 0er 2e(3) 
+Treble Clef24: 4e(5) 4e(5) 0qr 0er 4e(5) 4e(5) 2e(3) 3e(4) 3e(4) 0hr 2e(3) 3e(4)
+Treble Clef25: 4e(5)  4e(5) 4e(5)  5e(5)  4e(5)  3e(4)  2e(3)  1e(2)  0e(1)  0e(1) 0qr 0hr
+Title: Rasputin (Boney M)
 Key Signature: 4/4
-Treble Clef1: -1e(1) 3e(3) 3e(3) 3e(3) 3q(3) 3e(3) 3e(3) 4e(4) 5e(5) 4e(4) 3e(3) 3q(3) 0e(1) 1e(2)
-Bass Clef1: 4q(1) 1q(4) 4q(1) 1q(4) 4q(1) 1q(4) 4q(1) 1q(4)
-Treble Clef2: 2q(3) 2q(3) 2q(3) 0e(1) 1e(2) 2e(3) 2e(3) 1e(2) 0e(1) -1q(1) 0qr
-Bass Clef2: 0q(5) 4q(1) 0q(5) 4q(1) 1q(4) sh-3q(2) 4q(1) 1q(4)
-Title: Beat It
-Key Signature: 4/4 4-sh
+Treble Clef1: -1e(1) 3e(3) 3e(3) 3e(3) 3q(3) 3e(3) 3e(3)   4e(4) 5e(5) 4e(4) 3e(3) 3q(3) 0e(1) 1e(2)
+Treble Clef2: 2q(3) 2q(3) 2q(3) 0e(1) 1e(2)    2e(3) 2e(3) 1e(2) 0e(1) -1q(1) 0qr
+Treble Clef3: -1e(1) 3e(3) 3e(3) 3e(3) 3q(3) 3e(3) 3e(3)     4e(4) 5e(5) 4e(4) 3e(3) 3q(3) 0e(1) 1e(2)
+Treble Clef4: 2q(3) 2q(3) 2q(3) 0e(1) 1e(2)    2e(3) 2e(3) 1e(2) 0e(1) -1q(1) 0qr
+Treble Clef5: 6q(5) 6q(5) 5e(4) 5e(4) 5q(4) sh-4e(3) 4e(3) 4e(3) 4e(3) 3e(2) -1e(1) -1q(1)
+Title: Beat It (Michael Jackson)
+Key Signature: 4/4 4-sh-tr 1-sh-ba
 Treble Clef1: 0er 0e(3) 0e(3) 0e(3) -1e(2) 0e(3) -1e(2) 0e(3) 2e(5) 0e(3) -1q(2) 0q.(3) 0e(3)
-Bass Clef1: {1w(5) 3w(3) 5w(1)} {1w(5) 3w(3) 5w(1)}
 Treble Clef2: 0e(3) 0e(3) 0e(3) 0e(3) 0e(3) 0e(3) -1e(2) -2e(1) -1e(2) -2e(1) 0q(3) 0qr 0q(3)
 Treble Clef3: -1e(2) -2e(1) -4e(2) -5e(1) -4q(2) -4e(2) -4e(2) -3e(4) -4e(3) -5e(2) -7e(1) -5e(2) -4e(3)
+Treble Clef4: -2e(5) -4e(3) 0qr 0qr -4q(3) -3e(4) -5e(2) 0qr 0hr
+Treble Clef5: -2e(5)  -4e(3) 0qr 0qr 0e(2) 0e(2) 2e(4) 0e(2) -1q(1) 0q(2) -1q(1)
+Treble Clef6: 0q(2) 0q(2) 0hr 0q(2) 0q(2) 0hr 
+Treble Clef7: 0e(2) 0e(2) 0e(2) 0e(2) 0q(2) 0q(2) 0q(2) 0q(2) 0hr
+Treble Clef8: -1e(4) -2e(3) -1q(4) -2e(3) -1e(4) 0qr -1e(4) -2e(3) -1q(4) -2q(3) 0qr
+Treble Clef9: -1e(4) -2e(3) -1q(4) -2e(3) -1e(4) 0qr -1e(4) -2e(3) -1q(4) -2q(3) -1q(4)
+Treble Clef10: -2e(5) -4e(3) 0qr 0qr -4q(3) -3e(4) -5e(2) 0qr 0qr -1q(5)
+Treble Clef11: -2e(5) -4e(3) 0qr 0qr -4q(3) -3e(4) -5e(2) 0hr
+
