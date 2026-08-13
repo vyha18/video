@@ -1544,7 +1544,8 @@ function setStatus(msg, isError){
 /* ---------------------------------------------------------------------- */
 /* Song list — loaded from song.txt next to this HTML file, if present    */
 /* ---------------------------------------------------------------------- */
-function parseSongFile(text){
+/*
+  function parseSongFile(text){
   const lines = text.split('\n');
   const songs = [];
   let current = null;
@@ -1562,7 +1563,33 @@ function parseSongFile(text){
     .map(s=>({title:s.title, notation:s.lines.join('\n').trim()}))
     .filter(s=>s.title && s.notation);
 }
+*/
 
+function parseSongFile(text){
+  // Handle both Windows and Unix line endings
+  const lines = text.split(/\r?\n/);
+  const songs = [];
+  let current = null;
+  lines.forEach(line=>{
+    // Trim the line to handle any leading/trailing whitespace
+    const trimmed = line.trim();
+    // Skip empty lines
+    if (!trimmed) return;
+    
+    const m = trimmed.match(/^Title\s*:\s*(.*)$/i);
+    if(m){
+      if(current) songs.push(current);
+      current = {title: m[1].trim(), lines: []};
+    } else if(current){
+      current.lines.push(trimmed);
+    }
+  });
+  if(current) songs.push(current);
+  return songs
+    .map(s=>({title:s.title, notation:s.lines.join('\n').trim()}))
+    .filter(s=>s.title && s.notation);
+}
+  
 function renderSongLinks(songs){
   const panel = document.getElementById('songListPanel');
   const container = document.getElementById('songLinks');
