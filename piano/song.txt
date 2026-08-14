@@ -40,4 +40,23 @@ Treble Clef8: -1e(4) -2e(3) -1q(4) -2e(3) -1e(4) 0qr -1e(4) -2e(3) -1q(4) -2q(3)
 Treble Clef9: -1e(4) -2e(3) -1q(4) -2e(3) -1e(4) 0qr -1e(4) -2e(3) -1q(4) -2q(3) -1q(4)
 Treble Clef10: -2e(5) -4e(3) 0qr 0qr -4q(3) -3e(4) -5e(2) 0qr 0qr -1q(5)
 Treble Clef11: -2e(5) -4e(3) 0qr 0qr -4q(3) -3e(4) -5e(2) 0hr
+Title: Smooth Criminal (Michael Jackson)
+Key Signature: 4/4
+Treble Clef1: 0er -1s(2) -1s(2) -1s(2) -1s(2) -2s(1) -1s(2) 0e(3) 0e(3) 0sr -1s(2) -1s(2) 0s(3)     1e(4) 1e(4) 0er 0s(3) 0s(4) 0e(3) -2e(1) 0qr
+Treble Clef2: 0er -1s(2) -1s(2) -1s(2) -1s(2) -2s(1) -1s(2) 0e(3) 0e(3) 0sr -1s(2) -1s(2) 0s(3)     1e(4) 1e(4) 0er 0s(3) 0s(4) 0e(3) -2e(1) 0qr
+Treble Clef3:  0er -1s(2) -1s(2) -1s(2) -1s(2) -2s(1) -1s(2) 0e(3) 0e(3) 0er -1s(2) 0s(3)   1e(4) 1e(4) 0er 0s(3) 1s(4) 0e(3) -2e(1) 0qr
+Treble Clef4:  0er -1s(2) -1s(2) -1s(2) -1s(2) -2s(1) -1s(2) 0e(3) 0e(3) 0er -1s(2) 0s(3)   1e(4) 1e(4) 0er 0s(3) 1s(4) 0e(3) -2e(1) 0qr
+Treble Clef5: -1s(1) -1s(1) -1s(1) 3s(5) 2e(4) -1e(1) 0er 0er(1) -1s(1) -1s(1) -1s(1) 3s(5)   2e(4) -1e(1) 0er -1s(1) -1s(1) 0e(2) -2e(1) -2s(1) -1s(2) 0er
+Treble Clef6: -1s(1) -1s(1) -1s(1) 3s(5) 2e(4) -1e(1) 0er 0er -1s(1) -1s(1) -1s(1) 3s(5)   2e(4) -1e(1) 0er -1s(1) -1s(1) 0e(2) -2e(1) -2s(1) -1s(2) 0er
+Treble Clef7: -1s(1) -1s(1) -1s(1) 3s(5) 2e(4) -1e(1) 0er oer -1s(1) -1s(1) -1s(1) 3s(5)   2e(4) -1e(1) 0er -1s(1) -1s(1) 0e(2) -2e(1) -2s(1) -1s(2) 0er
+Treble Clef8: -1s(1) -1s(1) -1s(1) 3s(5) 2e(4) -1e(1) 0er 0qr 3s(5) 3s(5) 3s(5) 3s(5) 5e(4) 3e(2) 0er 3s(2) 3s(2) 5e(4) 3e(2) 5e(4) 6e(5) 
+Treble Clef9: 0qr 1s(4) 1s(4) 1s(4) 1s(4) 0e(3) -2e(1) 0er -1s(2) 0s(3)  -1e(3) -3e(1) 0er -1s(3) -1s(3) 0e(4) -2e(2) 0qr
+Treble Clef10: 0er 1s(4)  1s(4) 1e(4) 1s(4) 1s(4) 0e(3) -2e(1) 0er 1s(4) 2s(5)  -1e(3) -3e(1) 0er -1s(3) -1s(3) sh--2e(2) -2e(2)  0e(4) 1e(5)
+Treble Clef11: 0er 1s(4) 1s(4) 1s(4) 1s(4) 1s(4) 1s(4) 0e(3) na--2e(1) 0sr -1s(2) -1s(2) 0s(3) -1e(2) -3e(1) 0er -1s(2) -1s(2) 0e(3) -2e(1) 0qr 
+Treble Clef12: 0er 1s(4)  1s(4) 1s(4) 1s(4) 1s(4) 1s(4) 0e(3) -2e(1) 0er -1s(2) 0s(3) -1e(2) -3e(1) 0er -1s(2) -1s(2) 0e(3) sh--2e(1) 0qr
+Treble Clef13: -1s(1) -1s(1) -1s(1) 3s(5) 2e(4) -1e(1) 0er oer -1s(1) -1s(1) -1s(1) 3s(5)   2e(4) -1e(1) 0er -1s(1) -1s(1) 0e(2) -2e(1) -2s(1) -1s(2) 0er
+Treble Clef14: -1s(1) -1s(1) -1s(1) 3s(5) 2e(4) -1e(1) 0er oer -1s(1) -1s(1) -1s(1) 3s(5)   2e(4) -1e(1) 0er -1s(1) -1s(1) 0e(2) -2e(1) -2s(1) -1s(2) 0er
+Treble Clef15: -1s(1) -1s(1) -1s(1) 3s(5) 2e(4) -1e(1) 0er oer -1s(1) -1s(1) -1s(1) 3s(5)   2e(4) -1e(1) 0er -1s(1) -1s(1) 0e(2) -2e(1) -2s(1) -1s(2) 0er
+Treble Clef16: 3e(4) 1e(2) 2e(3) 2e(3) 0qr 3e(4) 1e(2) 2e(3) 2e(3) 0er 1e(2) 3q(4) 2s(3) 1s(2) -1e(1)
+
 
