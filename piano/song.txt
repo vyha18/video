@@ -15,11 +15,11 @@ Treble Clef2: 3e(3) 3e(3) 0hr 2e(2) 3e(3) 4e(4) 4e(4) 4e(4) 5e(5) 4e(4) 3e(3) 2e
  Treble Clef5: 0e(2) 0e(2) 0qr 0er 0e(2) 0e(2) 0e(2) -1e(1) -1e(1) -1e(1) -1e(1) 6e(5) 6e(5) 6e(5) 5e(4)  
  Treble Clef6: 4q(3) 5e(4) 4e(3) tie 4q(3) 0qr 3e(2) 3e(2) 3e(2) 4e(3) 5q(4) 3e(2) 4e(3) tie
  Treble Clef7: 4h(3) 0qr. 4e(3) 3e(2) 3e(2) 3e(2) 4e(3) 5q(4) 3e(2) 4e(3) tie
- Treble Clef8: 4e(3) 2q(1) 0e(1) tie 0q(1) 0er 0e(1) 1e(2) 1e(2) 1e(2) 1e(2) 1q(2) 1e(2) 4e(5) tie
- Treble Clef9: 4h(5) 0qr. 2e(3) 4e(5) 4e(5) 0qr 0er 4e(5) 4e(5) 2e(3)
- Treble Clef10: 3e(4) 3e(4) 0hr 2e(3) 3e(4) 4e(5) 4e(5) 4e(5) 5e(5) 4e(5) 3e(4) 2e(3) 1e(2)
- Treble Clef11: 0e(1) 0e(1) 0hr 0er 2e(3) 4e(5) 4e(5) 0qr 0er 4e(5) 4e(5) 2e(3)
- Treble Clef12: 3e(4) 3e(4) 0hr 2e(3) 3e(4) 4e(5)  4e(5) 4e(5)  5e(5)  4e(5)  3e(4)  2e(3)  1e(2)
+ Treble Clef8: 4e(3) 2q(1) 0e(1) tie 0q(1) 0er 0e(1) 1e(2) 1e(2) 1e(2) 1e(2) 1q(2) 1e(2) 4e(4) tie
+ Treble Clef9: 4h(5) 0qr. 2e(2) 4e(4) 4e(4) 0qr 0er 4e(4) 4e(4) 2e(2)
+ Treble Clef10: 3e(3) 3e(3) 0hr 2e(2) 3e(3) 4e(4) 4e(4) 4e(4) 5e(5) 4e(4) 3e(3) 2e(2) 1e(1)
+ Treble Clef11: 0e(1) 0e(1) 0hr 0er 2e(2) 4e(4) 4e(4) 0qr 0er 4e(4) 4e(4) 2e(2)
+ Treble Clef12: 3e(3) 3e(3) 0hr 2e(2) 3e(3) 4e(4)  4e(4) 4e(4)  5e(5)  4e(4)  3e(3)  2e(2)  1e(1)
  Treble Clef13: 0e(1)  0e(1) 0qr 0hr 0hr. 0er 2e(2)
  Treble Clef14: 4e(4) 4e(4) 0qr 0er 4e(4) 4e(4) 2e(2) 3e(3) 3e(3) 0hr 2e(2) 3e(3)
  Treble Clef15:  4e(4) 4e(4) 4e(4) 5e(5) 4e(4) 3e(3) 2e(2) 1e(1)  0e(1) 0e(1) 0hr 0er 2e(2)
