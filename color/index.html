@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Color Fun!</title>
+<style>
+:root{--bg:#ffe9a8;--panel:#ffffff;--ink:#2b2b3a;--ring:#2b2b3a;--pick:#ff6f3c;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c2233;--panel:#2a3250;--ink:#f3f3fa;--ring:#ffffff;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1c2233;--panel:#2a3250;--ink:#f3f3fa;--ring:#ffffff;color-scheme:dark}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Comic Sans MS","Chalkboard SE","Trebuchet MS",system-ui,sans-serif;overscroll-behavior:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+button{font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#app{height:100%;display:grid;gap:10px;padding:10px;box-sizing:border-box;grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:minmax(0,1fr) auto;grid-template-areas:"pal stage tools" "pics pics pics"}
+#palette{grid-area:pal;display:grid;grid-template-columns:repeat(2,58px);gap:10px;align-content:center;padding:12px;background:var(--panel);border-radius:26px}
+.c{width:58px;height:58px;border-radius:50%;border:4px solid #fff;box-shadow:0 0 0 2px rgba(0,0,0,.25);padding:0;font-size:26px;transition:transform .12s}
+.c.on{transform:scale(1.15);box-shadow:0 0 0 5px var(--ring)}
+#stage{grid-area:stage;container-type:size;display:grid;place-items:center;min-height:0;min-width:0}
+#paper{width:min(100cqw,100cqh);height:min(100cqw,100cqh);position:relative;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 6px 0 rgba(0,0,0,.18);touch-action:none}
+#paper canvas,#paper svg{position:absolute;inset:0;width:100%;height:100%}
+#lines{pointer-events:none}
+#tools{grid-area:tools;display:flex;flex-direction:column;gap:12px;justify-content:center;align-items:center;padding:12px;background:var(--panel);border-radius:26px}
+.t{width:64px;height:64px;border-radius:20px;border:0;background:var(--bg);color:var(--ink);font-size:30px;display:grid;place-items:center;padding:0}
+.t.on{box-shadow:0 0 0 4px var(--pick)}
+.t i{display:block;border-radius:50%;background:var(--ink)}
+#clear.armed{background:#ff5252;color:#fff}
+#pics{grid-area:pics;display:flex;gap:10px;overflow-x:auto;padding:8px 10px;background:var(--panel);border-radius:26px}
+.p{flex:0 0 auto;width:84px;height:84px;border:4px solid transparent;border-radius:16px;background:#fff;padding:0;overflow:hidden}
+.p.on{border-color:var(--pick)}
+.p svg{width:100%;height:100%;display:block}
+@media (max-aspect-ratio:1/1){
+#app{grid-template-columns:minmax(0,1fr) auto;grid-template-rows:minmax(0,1fr) auto auto;grid-template-areas:"stage stage" "pal tools" "pics pics"}
+#palette{grid-template-columns:repeat(7,58px);justify-content:center}
+#tools{flex-direction:row}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="palette" role="group" aria-label="Colors"></div>
+  <div id="stage">
+    <div id="paper">
+      <canvas id="bg" width="800" height="800"></canvas>
+      <canvas id="fg" width="800" height="800"></canvas>
+      <svg id="lines" viewBox="0 0 400 400" fill="none" stroke="#222" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"></svg>
+    </div>
+  </div>
+  <div id="tools">
+    <button class="t sz" data-s="14" aria-label="Small brush"><i style="width:10px;height:10px"></i></button>
+    <button class="t sz on" data-s="30" aria-label="Medium brush"><i style="width:20px;height:20px"></i></button>
+    <button class="t sz" data-s="54" aria-label="Big brush"><i style="width:32px;height:32px"></i></button>
+    <button class="t" id="undo" aria-label="Undo">↩️</button>
+    <button class="t" id="clear" aria-label="Start over">🗑️</button>
+  </div>
+  <div id="pics" role="group" aria-label="Pictures"></div>
+</div>
+<script>
+const C=(x,y,r)=>`M${x-r} ${y}a${r} ${r} 0 1 0 ${2*r} 0a${r} ${r} 0 1 0 ${-2*r} 0z`;
+const E=(x,y,a,b)=>`M${x-a} ${y}a${a} ${b} 0 1 0 ${2*a} 0a${a} ${b} 0 1 0 ${-2*a} 0z`;
+const R=(x,y,w,h)=>`M${x} ${y}h${w}v${h}h${-w}z`;
+const G=(...n)=>{let s=`M${n[0]} ${n[1]}`;for(let i=2;i<n.length;i+=2)s+=`L${n[i]} ${n[i+1]}`;return s+'z'};
+const S=(cx,cy,o,r)=>{const p=[];for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,d=i%2?r:o;p.push((cx+d*Math.cos(a)).toFixed(1),(cy+d*Math.sin(a)).toFixed(1))}return G(...p)};
+const petals=[0,1,2,3,4,5].map(i=>{const a=i*Math.PI/3;return C(+(200+58*Math.cos(a)).toFixed(1),+(150+58*Math.sin(a)).toFixed(1),28)});
+
+const PICS=[
+{s:[R(0,345,400,55),R(100,195,200,150),G(75,195,200,100,325,195),G(250,138,250,100,286,100,286,165),R(125,225,50,45),R(225,225,50,45),R(178,265,44,80),C(330,50,30),E(80,70,45,20)],l:["M200 225v45M125 247h50M150 225v45M225 247h50M250 225v45"]},
+{s:[R(0,330,400,70),...petals,C(200,150,30),R(195,232,10,98),E(165,285,30,13),E(235,265,30,13),C(60,60,24)],l:[]},
+{s:[E(180,200,110,65),G(290,200,360,140,360,260),G(150,140,190,95,225,138),C(115,185,12),C(55,120,10),C(35,80,14),C(80,60,8)],l:["M80 215q15 12 30 0"]},
+{s:[E(122,150,65,50),E(278,150,65,50),E(140,255,45,38),E(260,255,45,38),E(200,200,14,80),C(110,150,16),C(290,150,16),C(140,255,12),C(260,255,12)],l:["M195 122Q180 80 160 70","M205 122Q220 80 240 70"]},
+{s:[R(0,335,400,65),R(55,225,290,45),G(115,225,150,165,250,165,285,225),G(130,220,158,175,195,175,195,220),G(205,220,205,175,242,175,268,220),C(125,300,30),C(275,300,30),C(125,300,12),C(275,300,12),C(325,247,10),C(70,80,30)],l:["M200 230v36"]},
+{s:[C(200,215,95),G(118,160,115,75,180,125),G(282,160,285,75,220,125),C(160,205,15),C(240,205,15),C(160,205,6),C(240,205,6),G(185,235,215,235,200,252),C(70,340,32)],l:["M200 252v10","M200 262q-18 15-35 0","M200 262q18 15 35 0","M95 235L145 240","M95 262L148 255","M305 235L255 240","M305 262L252 255","M45 330q25 25 50 10"]},
+{s:[R(0,340,400,60),R(172,235,56,105),C(200,150,85),C(165,130,14),C(235,160,14),C(195,190,14),C(340,60,32),E(80,70,48,22)],l:[]},
+{s:[E(200,190,55,115),C(200,160,25),G(153,245,95,325,184,300),G(247,245,305,325,216,300),G(186,301,200,370,214,301),S(70,80,22,10),S(330,70,18,8),S(60,260,16,7),S(345,230,20,9),S(300,340,14,6)],l:["M150 225h100"]},
+{s:["M135 235a65 65 0 0 1 130 0z",R(125,235,150,24),G(135,259,265,259,200,375),C(200,156,14),C(170,205,6),C(210,190,6),C(235,215,6),C(190,222,6),S(80,90,20,9),S(330,110,18,8)],l:["M200 142q10-25 30-30","M160 262L205 342","M240 262L195 342"]},
+{s:[R(0,320,400,80),G(70,270,330,270,290,320,110,320),R(196,90,8,180),G(190,95,190,262,100,262),G(210,115,210,262,290,262),G(204,90,245,100,204,112),C(320,70,32),E(90,70,45,20)],l:["M30 350q15-12 30 0t30 0t30 0t30 0","M230 365q15-12 30 0t30 0t30 0t30 0"]}
+];
+var M;
+const COLORS=['#e53935','#fb8c00','#fdd835','#9ccc65','#2e9e4f','#26c6da','#4fa3ff','#1e53d6','#8e24aa','#f48fb1','#ff4fa0','#795548','#212121','#ffffff'];
+const $=id=>document.getElementById(id);
+const K=2,N=800;
+const bx=$('bg').getContext('2d'),fx=$('fg').getContext('2d');
+bx.scale(K,K);fx.scale(K,K);
+let cur=-1,paths=[],color=COLORS[0],size=30,saved={},undo=[],armT=0;
+
+const pal=$('palette');
+COLORS.forEach((c,i)=>{const b=document.createElement('button');b.className='c'+(i?'':' on');b.style.background=c;b.setAttribute('aria-label','Color '+(i+1));if(c==='#ffffff')b.textContent='🧽';b.onclick=()=>{color=c;pal.querySelectorAll('.c').forEach(x=>x.classList.toggle('on',x===b))};pal.appendChild(b)});
+
+const svgInner=p=>p.s.map(d=>`<path d="${d}"/>`).join('')+p.l.map(d=>`<path d="${d}"/>`).join('');
+const pics=$('pics');
+PICS.forEach((p,i)=>{const b=document.createElement('button');b.className='p';b.setAttribute('aria-label','Picture '+(i+1));b.innerHTML=`<svg viewBox="0 0 400 400" fill="none" stroke="#222" stroke-width="9" stroke-linejoin="round" stroke-linecap="round">${svgInner(p)}</svg>`;b.onclick=()=>show(i);pics.appendChild(b)});
+
+const snap=()=>[bx.getImageData(0,0,N,N),fx.getImageData(0,0,N,N)];
+const restore=s=>{bx.putImageData(s[0],0,0);fx.putImageData(s[1],0,0)};
+function reset(){bx.fillStyle='#fff';bx.fillRect(0,0,400,400);fx.clearRect(0,0,400,400);fx.fillStyle='#fff';paths.forEach(p=>fx.fill(p))}
+function show(i){
+  if(cur>=0)saved[cur]=snap();
+  cur=i;paths=PICS[i].s.map(d=>new Path2D(d));
+  $('lines').innerHTML=svgInner(PICS[i]);
+  pics.querySelectorAll('.p').forEach((b,j)=>b.classList.toggle('on',j===i));
+  if(saved[i])restore(saved[i]);else reset();
+  undo=[];
+}
+
+document.querySelectorAll('.sz').forEach(b=>b.onclick=()=>{size=+b.dataset.s;document.querySelectorAll('.sz').forEach(x=>x.classList.toggle('on',x===b))});
+$('undo').onclick=()=>{const s=undo.pop();if(s)restore(s)};
+const clr=$('clear');
+clr.onclick=()=>{
+  if(clr.classList.contains('armed')){clearTimeout(armT);clr.classList.remove('armed');clr.textContent='🗑️';reset();undo=[];return}
+  clr.classList.add('armed');clr.textContent='❓';
+  armT=setTimeout(()=>{clr.classList.remove('armed');clr.textContent='🗑️'},2500);
+};
+
+const paper=$('paper');
+let drawing=false,pid=null,ctx=null,last=null;
+const pos=e=>{const r=paper.getBoundingClientRect();return[(e.clientX-r.left)/r.width*400,(e.clientY-r.top)/r.height*400]};
+function seg(a,b){ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke()}
+paper.addEventListener('pointerdown',e=>{
+  if(drawing)return;e.preventDefault();
+  paper.setPointerCapture(e.pointerId);pid=e.pointerId;
+  const p=pos(e);let idx=-1;
+  for(let i=paths.length-1;i>=0;i--){if(fx.isPointInPath(paths[i],p[0]*K,p[1]*K)){idx=i;break}}
+  undo.push(snap());if(undo.length>8)undo.shift();
+  ctx=idx<0?bx:fx;ctx.save();
+  if(idx>=0)ctx.clip(paths[idx]);
+  ctx.strokeStyle=ctx.fillStyle=color;ctx.lineWidth=size;ctx.lineCap=ctx.lineJoin='round';
+  ctx.beginPath();ctx.arc(p[0],p[1],size/2,0,Math.PI*2);ctx.fill();
+  last=p;drawing=true;
+});
+paper.addEventListener('pointermove',e=>{
+  if(!drawing||e.pointerId!==pid)return;e.preventDefault();
+  const list=e.getCoalescedEvents?e.getCoalescedEvents():[e];
+  for(const ev of (list.length?list:[e])){const p=pos(ev);seg(last,p);last=p}
+});
+const end=e=>{if(!drawing||e.pointerId!==pid)return;ctx.restore();drawing=false;pid=null};
+paper.addEventListener('pointerup',end);
+paper.addEventListener('pointercancel',end);
+paper.addEventListener('contextmenu',e=>e.preventDefault());
+show(0);
+</script>
+</body>
+</html>
