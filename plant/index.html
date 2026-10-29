@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>How Plants & Trees Grow</title>
+<style>
+:root{--bg:#dff3ff;--fg:#1d2b3a;--chip:#ffffff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10202e;--fg:#e8f1f8;--chip:#223647}}
+:root[data-theme="dark"]{--bg:#10202e;--fg:#e8f1f8;--chip:#223647}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Trebuchet MS","Comic Sans MS",system-ui,sans-serif}
+.wrap{max-width:1000px;margin:0 auto;padding:12px}
+h1{margin:6px 0 10px;text-align:center;font-size:clamp(1.3rem,4vw,2rem)}
+.scene{position:relative;border:4px solid #fff;border-radius:24px;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,.2)}
+svg{display:block;width:100%;height:auto}
+#eq{position:absolute;left:50%;top:30%;transform:translateX(-50%);width:29%;text-align:center;background:rgba(255,255,255,.92);color:#223;border-radius:16px;padding:6px;font-weight:bold;font-size:clamp(10px,1.8vw,17px);line-height:1.35;opacity:0;transition:opacity .5s;pointer-events:none}
+#eq.on{opacity:1}
+.panel{display:flex;gap:12px;align-items:center;margin-top:12px}
+.bee{font-size:clamp(2.2rem,8vw,3.6rem)}
+.bubble{position:relative;flex:1;background:#fff;color:#223;border-radius:22px;padding:12px 16px;box-shadow:0 3px 10px rgba(0,0,0,.18);min-height:96px}
+.bubble:before{content:"";position:absolute;left:-14px;top:30px;border:10px solid transparent;border-right:16px solid #fff}
+.bubble b{display:block;font-size:clamp(1.05rem,3vw,1.4rem);color:#d2570a;margin-bottom:4px}
+.bubble p{margin:0;font-size:clamp(.95rem,2.6vw,1.2rem);line-height:1.4}
+.ctl{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin-top:14px}
+#pp{min-width:190px;min-height:62px;border:0;border-radius:999px;background:#ff7a1a;color:#fff;font:bold 1.4rem inherit;font-family:inherit;box-shadow:0 5px 0 #c4570a;cursor:pointer}
+#pp:active{transform:translateY(4px);box-shadow:0 1px 0 #c4570a}
+#pp.paused{background:#2fb344;box-shadow:0 5px 0 #1e8530}
+.chip{border:3px solid transparent;background:var(--chip);color:var(--fg);border-radius:14px;padding:8px 10px;font:inherit;font-size:.95rem;cursor:pointer}
+.chip.on{border-color:#ff7a1a;font-weight:bold}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>🌻 How Plants &amp; Trees Grow 🌳</h1>
+<div class="scene">
+<svg viewBox="0 0 1000 560" role="img" aria-label="A plant and a tree growing with roots underground">
+<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5fc3ff"/><stop offset="1" stop-color="#cdf0ff"/></linearGradient></defs>
+<rect width="1000" height="310" fill="url(#sky)"/>
+<g id="clouds" fill="#fff" opacity=".9"><ellipse cx="130" cy="70" rx="50" ry="20"/><ellipse cx="165" cy="58" rx="35" ry="20"/><ellipse cx="860" cy="110" rx="55" ry="20"/><ellipse cx="895" cy="98" rx="35" ry="18"/></g>
+<g id="sun"><g id="rays" stroke="#ffb703" stroke-width="7" stroke-linecap="round"></g><circle r="40" fill="#ffd23f" stroke="#ffb703" stroke-width="4"/><circle cx="-13" cy="-7" r="4.5" fill="#6b3a00"/><circle cx="13" cy="-7" r="4.5" fill="#6b3a00"/><path d="M-15 8Q0 24 15 8" stroke="#c0560e" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+<rect y="300" width="1000" height="260" fill="#9a6234"/>
+<g fill="#7d4c26"><ellipse cx="90" cy="400" rx="14" ry="8"/><ellipse cx="440" cy="450" rx="18" ry="9"/><ellipse cx="560" cy="380" rx="14" ry="8"/><ellipse cx="930" cy="480" rx="16" ry="8"/><ellipse cx="480" cy="520" rx="20" ry="9"/><ellipse cx="60" cy="510" rx="16" ry="8"/></g>
+<rect y="296" width="1000" height="16" rx="8" fill="#5cc84a"/>
+<g fill="none" stroke="#c98e57" stroke-linecap="round">
+<g stroke-width="4"><path d="M250 302Q238 350 213 402"/><path d="M250 302Q258 360 288 412"/><path d="M250 302Q246 380 240 445"/><path d="M240 360Q215 370 190 365"/><path d="M255 340Q285 345 310 338"/></g>
+<g stroke-width="8"><path d="M750 302Q730 360 700 402"/><path d="M750 302Q772 362 802 412"/><path d="M750 302Q746 385 742 450"/></g>
+<g stroke-width="5"><path d="M725 350Q695 362 665 352"/><path d="M768 345Q800 350 830 340"/><path d="M745 400Q720 420 705 445"/></g></g>
+<g fill="#fff" font-weight="bold" font-size="18" text-anchor="middle" opacity=".85"><text x="250" y="500">🌱 Roots</text><text x="750" y="500">🌱 Roots</text></g>
+<g id="dyn">
+<g id="beams" stroke="#ffe066" stroke-width="5" stroke-dasharray="12 10" stroke-linecap="round"><line id="b1" x1="500" y1="75"/><line id="b2" x1="500" y1="75"/></g>
+<line id="stem" x1="250" y1="304" x2="250" y2="200" stroke="#3fae3a" stroke-width="10" stroke-linecap="round"/>
+<g id="leaves"></g>
+<g id="flower"><g id="petals"></g><circle r="8" fill="#ffd23f"/></g>
+<rect id="trunk" x="732" width="36" rx="10" fill="#8b5a2b"/>
+<g id="canopy"><circle cx="-50" cy="22" r="50" fill="#2fa84f"/><circle cx="50" cy="22" r="50" fill="#2fa84f"/><circle cx="0" cy="0" r="70" fill="#35b956"/><circle cx="-20" cy="-25" r="22" fill="#4ccb6c" opacity=".7"/></g>
+<g id="fruits"></g>
+<g id="parts"></g>
+<g id="seeds"></g>
+<g id="sprouts"></g>
+</g>
+</svg>
+<div id="eq">💧 Water<br>+ 🌫️ CO₂<br>+ ☀️ Sunlight<br>⬇️<br>🍬 Glucose (sugar food!)</div>
+</div>
+
+<div class="panel"><div class="bee" aria-hidden="true">🐝</div>
+<div class="bubble" aria-live="polite"><b id="ttl"></b><p id="txt"></p></div></div>
+
+<div class="ctl"><button id="pp" aria-pressed="false">⏸ Pause</button><span id="chips" style="display:contents"></span></div>
+</div>
+
+<script>
+const NS="http://www.w3.org/2000/svg",$=id=>document.getElementById(id);
+const mk=(tag,at,par)=>{const e=document.createElementNS(NS,tag);for(const k in at)e.setAttribute(k,at[k]);par&&par.appendChild(e);return e};
+const cl=x=>Math.max(0,Math.min(1,x));
+const S=[0,7,14,22,31,38],TOT=46;
+const INFO=[
+["💧 Roots drink!","Under the ground, tiny roots soak up water and minerals from the soil. Watch the blue drops climb up like a drink through a straw!"],
+["☀️ Sunshine and air","Leaves soak up sunshine and breathe in a gas from the air called carbon dioxide, or CO₂. Here it comes!"],
+["🍬 Making food!","Leaves are tiny kitchens! Sunlight mixes water and CO₂ to cook glucose, a sugary food. Leaves also puff out fresh oxygen (O₂) for us to breathe!"],
+["🌸🍎 Growing up!","With plenty of food, the plant grows tall and blooms into a flower. The tree grows big and makes yummy fruit!"],
+["🌰 Seeds drop!","Seeds are hiding inside the flower and the fruit. When they are ready, they fall down to the soil."],
+["🌱 New life!","The seeds snuggle into the soil, then sprout! A new little plant and a new little tree begin to grow. The story starts again!"]];
+
+// sun rays
+for(let i=0;i<12;i++){const a=i*Math.PI/6;mk("line",{x1:Math.cos(a)*50,y1:Math.sin(a)*50,x2:Math.cos(a)*68,y2:Math.sin(a)*68},$("rays"))}
+// plant leaves
+const FR=[.3,.5,.7,.9],leaves=FR.map((f,i)=>{const g=mk("g",{},$("leaves"));mk("ellipse",{cx:30,rx:30,ry:12,fill:"#4cc94a",stroke:"#2f9a2f","stroke-width":2},g);mk("line",{x1:4,x2:52,stroke:"#2f9a2f","stroke-width":2},g);return g});
+for(let k=0;k<8;k++)mk("ellipse",{cy:-15,rx:7,ry:13,fill:"#ff7eb6",stroke:"#e0488b","stroke-width":1.5,transform:`rotate(${k*45})`},$("petals"));
+const FO=[[-35,10],[30,-10],[0,35],[40,30]],fruits=FO.map(()=>{const g=mk("g",{},$("fruits"));mk("circle",{r:11,fill:"#e53935",stroke:"#a82020","stroke-width":2},g);mk("circle",{cx:-4,cy:-4,r:3,fill:"#fff",opacity:.7},g);mk("path",{d:"M0-10Q6-18 12-14",stroke:"#2e7d32","stroke-width":3,fill:"none"},g);return g});
+// particles
+function part(fill,label,r){const g=mk("g",{opacity:0},$("parts"));mk("circle",{r,fill,stroke:"#fff","stroke-width":1.5},g);if(label){const t=mk("text",{"text-anchor":"middle",y:r*.3,"font-size":r*.85,"font-weight":"bold",fill:"#223"},g);t.textContent=label}return g}
+const put=(g,p,o)=>{g.setAttribute("transform",`translate(${p[0]},${p[1]})`);g.setAttribute("opacity",o)};
+const lerp=(a,b,p)=>[a[0]+(b[0]-a[0])*p,a[1]+(b[1]-a[1])*p];
+function along(pts,p){const L=[];let tot=0;for(let i=0;i<pts.length-1;i++){const d=Math.hypot(pts[i+1][0]-pts[i][0],pts[i+1][1]-pts[i][1]);L.push(d);tot+=d}let k=p*tot;for(let i=0;i<L.length;i++){if(k<=L[i])return lerp(pts[i],pts[i+1],k/L[i]);k-=L[i]}return pts[pts.length-1]}
+const WS=[[213,402],[288,412],[240,445],[262,370]],WT=[[700,402],[802,412],[742,450],[770,375]];
+const mkW=()=>Array.from({length:8},(_,i)=>part(i%4==3?"#d9a441":"#3aa8ff",null,i%4==3?5:7));
+const wP=mkW(),wT=mkW();
+const mkC=()=>Array.from({length:5},()=>part("#cfd6dd","CO₂",15)),cP=mkC(),cT=mkC();
+const mkG=()=>Array.from({length:4},()=>part("#ffd23f",null,8)),gP=mkG(),gT=mkG();
+const mkO=()=>Array.from({length:3},()=>part("#b9f6ca","O₂",12)),oP=mkO(),oT=mkO();
+const CS_P=[[60,180],[100,110],[430,170],[460,120],[40,260]],CS_T=[[560,200],[600,120],[950,150],[970,250],[900,60]],O=[[-45,-10],[35,-30],[0,25],[50,10],[-20,-45]];
+// seeds & sprouts
+const LX=[150,350,640,870],DL=[0,.7,.3,1],seeds=LX.map(()=>{const g=mk("g",{opacity:0},$("seeds"));mk("ellipse",{rx:6,ry:4,fill:"#5b3a1a",stroke:"#3a230d"},g);return g});
+const sprouts=LX.map((x,i)=>{const g=mk("g",{opacity:0},$("sprouts"));mk("path",{d:"M0 0Q-6 14-10 26M0 0Q6 14 10 26",stroke:"#c98e57","stroke-width":2.5,fill:"none"},g);
+if(i<2){mk("line",{y2:-34,stroke:"#3fae3a","stroke-width":5,"stroke-linecap":"round"},g);mk("ellipse",{cx:-11,cy:-36,rx:12,ry:6,fill:"#4cc94a",transform:"rotate(-25 -11 -36)"},g);mk("ellipse",{cx:11,cy:-36,rx:12,ry:6,fill:"#4cc94a",transform:"rotate(25 11 -36)"},g)}
+else{mk("line",{y2:-30,stroke:"#8b5a2b","stroke-width":6,"stroke-linecap":"round"},g);mk("circle",{cy:-44,r:17,fill:"#35b956"},g)}return g});
+// chips
+const chips=INFO.map((v,i)=>{const b=document.createElement("button");b.className="chip";b.textContent=(i+1)+". "+v[0].split(" ")[0];b.title=v[0];b.onclick=()=>{t=S[i]+.01;draw(t)};$("chips").appendChild(b);return b});
+
+let t=0,paused=false,last=0,cur=-1;
+function draw(t){
+const st=S.filter(s=>t>=s).length-1;
+if(st!==cur){cur=st;$("ttl").textContent=INFO[st][0];$("txt").textContent=INFO[st][1];$("eq").classList.toggle("on",st==2);chips.forEach((c,i)=>c.classList.toggle("on",i==st))}
+const g=t<S[3]?.2+.15*t/S[3]:t<S[4]?.35+.65*cl((t-S[3])/(S[4]-S[3])):1;
+const f=cl((t-S[3]-3.5)/4),h=70+120*g,th=90+90*g,c=.45+.55*g,cy=300-th-10;
+$("dyn").setAttribute("opacity",Math.min(1,t/.8,(TOT-t)/.8));
+$("sun").setAttribute("transform","translate(500,70)");$("rays").setAttribute("transform",`rotate(${t*12})`);
+$("clouds").setAttribute("transform",`translate(${Math.sin(t*.3)*25},0)`);
+// plant
+$("stem").setAttribute("y2",300-h);
+const ls=.6+.4*g;leaves.forEach((l,i)=>l.setAttribute("transform",`translate(250,${300-h*FR[i]}) scale(${(i%2?1:-1)*ls},${ls}) rotate(-25)`));
+$("flower").setAttribute("transform",`translate(250,${300-h}) scale(${f*1.1+.001})`);$("flower").setAttribute("opacity",f>0?1:0);
+// tree
+$("trunk").setAttribute("y",300-th);$("trunk").setAttribute("height",th+4);
+$("canopy").setAttribute("transform",`translate(750,${cy}) scale(${c})`);
+const fp=FO.map((o,i)=>[750+o[0]*c,cy+o[1]*c]);
+fruits.forEach((fr,i)=>{fr.setAttribute("transform",`translate(${fp[i][0]},${fp[i][1]}) scale(${f+.001})`);fr.setAttribute("opacity",f>0?1:0)});
+// sun beams
+const bv=cl(t-S[1])*cl(S[3]-t);
+[["b1",250,300-h*.8],["b2",750,cy-30]].forEach(a=>{const e=$(a[0]);e.setAttribute("x2",a[1]);e.setAttribute("y2",a[2]);e.setAttribute("stroke-dashoffset",-t*40);e.setAttribute("opacity",.85*bv)});
+// water & minerals
+const wv=cl(S[4]+1.5-t),tipP=[250,300-h+8],tipT=[750,cy];
+for(let i=0;i<8;i++){const p=(t*.13+i/8)%1,o=wv*Math.min(1,p*6,(1-p)*6);
+put(wP[i],along([WS[i%4],[250,306],tipP],p),o);put(wT[i],along([WT[i%4],[750,306],tipT],p),o)}
+// CO2
+const cv=cl(t-S[1])*cl(S[3]+1.5-t);
+for(let i=0;i<5;i++){const p=(t*.12+i/5)%1,o=cv*Math.min(1,(1-p)*5,p*5);
+put(cP[i],lerp(CS_P[i],[250+(i%2?42:-42),300-h*(.35+.12*i)],p),o);
+put(cT[i],lerp(CS_T[i],[750+O[i][0]*c,cy+O[i][1]*c],p),o)}
+// glucose & oxygen
+const gv=cl((t-S[2])/1)*cl(S[3]+.5-t);
+for(let i=0;i<4;i++){const p=(t*.2+i/4)%1,o=gv*Math.min(1,p*5,(1-p)*3);
+put(gP[i],along([[250,300-h*.8],[250,300]],p),o);put(gT[i],along([[750,cy+20],[750,298]],p),o)}
+for(let i=0;i<3;i++){const p=(t*.18+i/3)%1,o=gv*Math.min(1,p*5,(1-p)*3),d=(i-1)*45;
+put(oP[i],lerp([250+d*.5,300-h-10],[250+d*1.6,300-h-120],p),o);put(oT[i],lerp([750+d*.6,cy-70*c],[750+d*1.8,cy-70*c-110],p),o)}
+// seeds
+const sp0=[[242,300-h],[258,300-h],fp[0],fp[1]];
+seeds.forEach((e,i)=>{if(t<S[4]){e.setAttribute("opacity",0);return}
+const s=cl((t-S[4]-DL[i])/2.2),y0=sp0[i][1],b=cl((t-S[5])/2.5);
+const x=sp0[i][0]+(LX[i]-sp0[i][0])*s,y=y0+(311-y0)*s*s+b*14;
+put(e,[x,y],t>=S[5]?1-b:1)});
+// sprouts
+sprouts.forEach((e,i)=>{const sp=cl((t-S[5]-1.5)/5);e.setAttribute("transform",`translate(${LX[i]},306) scale(${sp+.001})`);e.setAttribute("opacity",sp>0?1:0)})
+}
+function frame(now){const dt=Math.min((now-last)/1000,.1);last=now;if(!paused){t+=dt;if(t>=TOT)t-=TOT}draw(t);requestAnimationFrame(frame)}
+const pp=$("pp");
+function toggle(){paused=!paused;pp.textContent=paused?"▶️ Play":"⏸ Pause";pp.classList.toggle("paused",paused);pp.setAttribute("aria-pressed",paused)}
+pp.onclick=toggle;
+addEventListener("keydown",e=>{if(e.code==="Space"&&e.target===document.body){e.preventDefault();toggle()}});
+requestAnimationFrame(n=>{last=n;frame(n)});
+</script>
+</body>
+</html>
