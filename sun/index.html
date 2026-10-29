@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sun and Shadow</title>
+<style>
+:root{--bg:#080c20;--card:#fff8e1;--ink:#2b2340;--hot:#ff8f1f;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:#fff;font-family:"Trebuchet MS","Comic Sans MS",system-ui,sans-serif;display:flex;flex-direction:column;overscroll-behavior:none;user-select:none;-webkit-user-select:none}
+#stage{flex:1;position:relative;min-height:0}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#hud{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:min(94%,560px);background:var(--card);color:var(--ink);border-radius:22px;padding:10px 18px 12px;box-shadow:0 5px 0 rgba(0,0,0,.35);box-sizing:border-box}
+#clock{font-size:26px;font-weight:700}
+#msg{font-size:18px;line-height:1.3;margin-top:2px}
+#meter{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:16px}
+.track{flex:1;height:14px;border-radius:7px;background:#e6dcc0;overflow:hidden}
+#fill{display:block;height:100%;width:0;background:#4a3a6d;border-radius:7px}
+#ctl{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;padding:10px 12px 14px}
+.chip{background:#1d2650;border-radius:16px;padding:10px 14px;font-size:17px}
+#pp{font:inherit;font-size:24px;font-weight:700;border:0;border-radius:30px;padding:14px 34px;background:var(--hot);color:#2b1600;box-shadow:0 5px 0 #b35a00;cursor:pointer;min-width:190px}
+#pp:active{transform:translateY(3px);box-shadow:0 2px 0 #b35a00}
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="cv"></canvas>
+  <div id="hud">
+    <div id="clock"></div>
+    <div id="msg"></div>
+    <div id="meter"><span>Shadow</span><div class="track"><i id="fill"></i></div><b id="len"></b></div>
+  </div>
+</div>
+<div id="ctl">
+  <span class="chip">↺ Earth spins anticlockwise</span>
+  <button id="pp" aria-pressed="false">⏸ Pause</button>
+  <span class="chip">🌅 Sun rises in the East, sets in the West</span>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const cv=$('cv'),g=cv.getContext('2d');
+let W=0,H=0,dpr=1;
+function fit(){const r=cv.parentElement.getBoundingClientRect();dpr=Math.min(devicePixelRatio||1,2);W=r.width;H=r.height;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr)}
+new ResizeObserver(fit).observe(cv.parentElement);fit();
+
+const DAY=36;            // seconds for one full day
+let hour=5.5,paused=false,last=performance.now(),clock=0;
+const stars=Array.from({length:110},()=>({x:Math.random(),y:Math.random(),r:Math.random()*1.4+.4,p:Math.random()*6.3}));
+const lands=[[.55,0,.22,.14,.5],[.62,1.6,.2,.12,1.2],[.5,3.1,.18,.16,0],[.66,4.4,.2,.1,2],[.35,5.3,.12,.1,.4]];
+const TAU=Math.PI*2;
+
+$('pp').onclick=()=>{paused=!paused;$('pp').textContent=paused?'▶ Play':'⏸ Pause';$('pp').setAttribute('aria-pressed',paused)};
+
+function pill(t,x,y,col){g.font='bold 15px "Trebuchet MS",sans-serif';const w=g.measureText(t).width+16;g.fillStyle=col;g.beginPath();g.roundRect?g.roundRect(x-w/2,y-13,w,26,13):g.rect(x-w/2,y-13,w,26);g.fill();g.fillStyle='#fff';g.textAlign='center';g.textBaseline='middle';g.fillText(t,x,y+1)}
+
+function draw(){
+  g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
+  const bg=g.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*.7);bg.addColorStop(0,'#1d2d66');bg.addColorStop(1,'#080c20');
+  g.fillStyle=bg;g.fillRect(0,0,W,H);
+  stars.forEach(s=>{g.globalAlpha=.5+.5*Math.sin(clock*1.5+s.p);g.fillStyle='#fff';g.beginPath();g.arc(s.x*W,s.y*H,s.r,0,TAU);g.fill()});g.globalAlpha=1;
+
+  const land=W>=H;
+  const re=land?Math.min(H*.24,W*.17):Math.min(W*.25,H*.17);
+  const rs=land?Math.min(H*.11,W*.08):Math.min(W*.12,H*.08);
+  const sx=W/2,sy=H/2;
+  const dist=Math.max(rs+re+30,(land?W/2:H/2)-re-34);
+  const ex=land?sx+dist:sx,ey=land?sy:sy+dist;
+  const s=Math.atan2(sy-ey,sx-ex);                 // direction from Earth to Sun
+  const d=(12-hour)*Math.PI/12;                    // >0 morning, <0 afternoon
+  const a=s+d;                                     // house angle on screen
+  const cz=Math.cos(d),day=cz>0.02;
+  const sd=[Math.cos(s),Math.sin(s)],pp=[-Math.sin(s),Math.cos(s)];
+
+  // sun
+  const gl=g.createRadialGradient(sx,sy,rs*.5,sx,sy,rs*3.6);gl.addColorStop(0,'rgba(255,200,60,.6)');gl.addColorStop(1,'rgba(255,200,60,0)');
+  g.fillStyle=gl;g.beginPath();g.arc(sx,sy,rs*3.6,0,TAU);g.fill();
+  g.fillStyle='#ffd23f';
+  for(let i=0;i<16;i++){const an=i*Math.PI/8+clock*.15,r2=rs*(1.6+(i%2)*.3),w=.11;g.beginPath();g.moveTo(sx+Math.cos(an-w)*rs,sy+Math.sin(an-w)*rs);g.lineTo(sx+Math.cos(an)*r2,sy+Math.sin(an)*r2);g.lineTo(sx+Math.cos(an+w)*rs,sy+Math.sin(an+w)*rs);g.fill()}
+  const sg=g.createRadialGradient(sx-rs*.25,sy-rs*.25,rs*.1,sx,sy,rs);sg.addColorStop(0,'#fff7b0');sg.addColorStop(.6,'#ffd23f');sg.addColorStop(1,'#ff9f1c');
+  g.fillStyle=sg;g.beginPath();g.arc(sx,sy,rs,0,TAU);g.fill();
+  g.fillStyle='#7a3b00';[-1,1].forEach(k=>{g.beginPath();g.arc(sx+k*rs*.32,sy-rs*.15,rs*.07,0,TAU);g.fill()});
+  g.strokeStyle='#7a3b00';g.lineWidth=Math.max(2,rs*.05);g.lineCap='round';g.beginPath();g.arc(sx,sy+rs*.05,rs*.38,.2*Math.PI,.8*Math.PI);g.stroke();
+
+  // sunbeams
+  g.lineWidth=3;g.setLineDash([10,14]);g.lineDashOffset=-clock*50;
+  [-.7,-.35,0,.35,.7].forEach(k=>{
+    const q=Math.sqrt(1-k*k)*re;
+    g.strokeStyle='rgba(255,225,90,.55)';g.beginPath();
+    g.moveTo(sx+pp[0]*k*rs,sy+pp[1]*k*rs);
+    g.lineTo(ex+sd[0]*q+pp[0]*k*re,ey+sd[1]*q+pp[1]*k*re);g.stroke()});
+  g.setLineDash([]);
+
+  // earth
+  const eg=g.createRadialGradient(ex+sd[0]*re*.4,ey+sd[1]*re*.4,re*.1,ex,ey,re);eg.addColorStop(0,'#4aa3ff');eg.addColorStop(1,'#1c5bb8');
+  g.save();g.beginPath();g.arc(ex,ey,re,0,TAU);g.clip();
+  g.fillStyle=eg;g.fillRect(ex-re,ey-re,re*2,re*2);
+  g.translate(ex,ey);g.rotate(a);
+  g.fillStyle='#4cae4f';
+  lands.forEach(l=>{g.save();g.rotate(l[1]);g.translate(l[0]*re,0);g.rotate(l[4]);g.beginPath();g.ellipse(0,0,l[2]*re,l[3]*re,0,0,TAU);g.fill();g.restore()});
+  g.fillStyle='#fff';g.beginPath();g.arc(0,0,re*.16,0,TAU);g.fill();
+  g.setTransform(dpr,0,0,dpr,0,0);
+  g.translate(ex,ey);g.rotate(s);
+  const ng=g.createLinearGradient(re*.14,0,-re*.14,0);ng.addColorStop(0,'rgba(4,8,36,0)');ng.addColorStop(1,'rgba(4,8,36,.72)');
+  g.fillStyle=ng;g.fillRect(-re*1.1,-re*1.1,re*1.1+re*.14,re*2.2);
+  g.restore();
+  g.strokeStyle='rgba(180,220,255,.7)';g.lineWidth=3;g.beginPath();g.arc(ex,ey,re,0,TAU);g.stroke();
+
+  // spin arrow (away from the Sun)
+  const c=s+Math.PI,ar=re+16;
+  g.strokeStyle='#ffe082';g.fillStyle='#ffe082';g.lineWidth=5;g.lineCap='round';
+  g.beginPath();g.arc(ex,ey,ar,c+.5,c-.5,true);g.stroke();
+  const ea=c-.5,tp=[ex+ar*Math.cos(ea),ey+ar*Math.sin(ea)],tg=[Math.sin(ea),-Math.cos(ea)],nm=[Math.cos(ea),Math.sin(ea)];
+  g.beginPath();g.moveTo(tp[0]+tg[0]*16,tp[1]+tg[1]*16);g.lineTo(tp[0]+nm[0]*9,tp[1]+nm[1]*9);g.lineTo(tp[0]-nm[0]*9,tp[1]-nm[1]*9);g.fill();
+
+  // house + shadow
+  const u=re/200,hh=64*u,ux=Math.cos(a),uy=Math.sin(a);
+  let len=0;
+  if(day){
+    const z=Math.acos(cz),tz=Math.min(5,Math.max(.12,Math.tan(Math.min(z,1.46))));
+    len=hh*tz;const dl=len/re,sgn=d>0?1:-1;
+    g.fillStyle='rgba(0,0,0,.55)';g.beginPath();
+    g.arc(ex,ey,re+7,a,a+sgn*dl,sgn<0);g.arc(ex,ey,re-1,a+sgn*dl,a,sgn>0);g.closePath();g.fill();
+    g.strokeStyle='rgba(255,235,130,.95)';g.lineWidth=2.5;g.setLineDash([7,7]);g.beginPath();
+    g.moveTo(ex+(re+hh)*ux,ey+(re+hh)*uy);g.lineTo(ex+re*Math.cos(a+sgn*dl),ey+re*Math.sin(a+sgn*dl));g.stroke();g.setLineDash([]);
+  }
+  g.save();g.translate(ex+re*ux,ey+re*uy);g.rotate(a+Math.PI/2);g.scale(u,u);
+  const wall=new Path2D();wall.rect(-26,-34,52,34);
+  const roof=new Path2D();roof.moveTo(-34,-34);roof.lineTo(0,-64);roof.lineTo(34,-34);roof.closePath();
+  g.fillStyle='#ffb74d';g.fill(wall);g.fillStyle='#e53935';g.fill(roof);
+  g.fillStyle='#6d4c41';g.fillRect(-6,-20,12,20);
+  g.fillStyle=day?'#81d4fa':'#ffee58';g.fillRect(10,-28,10,10);g.fillRect(-20,-28,10,10);
+  if(!day){g.fillStyle='rgba(8,12,40,.55)';g.fill(wall);g.fill(roof)}
+  g.restore();
+  const et=[uy,-ux],off=70*Math.max(u,.8);
+  pill('East',ex+re*ux+et[0]*off+ux*22,ey+re*uy+et[1]*off+uy*22,'#2e7d32');
+  pill('West',ex+re*ux-et[0]*off+ux*22,ey+re*uy-et[1]*off+uy*22,'#c62828');
+
+  hud(day,d,len,hh);
+}
+
+let lastMsg='';
+function hud(day,d,len,hh){
+  const h=Math.floor(hour),m=Math.floor((hour%1)*60/5)*5,ap=h<12?'AM':'PM',h12=h%12||12;
+  const ph=hour<6||hour>=18?0:hour<8?1:hour<11?2:hour<13?3:hour<16?4:5;
+  const dir=d>0?'West':'East',from=d>0?'East':'West';
+  const t=[
+    ['🌙 Night','The house faces away from the Sun, so it is dark. No Sun means no shadow.'],
+    ['🌅 Sunrise','The Sun comes up in the East. The shadow is very long and points West.'],
+    ['☀️ Morning','The Sun climbs higher in the East. The shadow gets shorter and points West.'],
+    ['🌞 Noon','The Sun is high above the house. The shadow is at its shortest.'],
+    ['⛅ Afternoon','The Sun is now in the West. The shadow grows longer and points East.'],
+    ['🌇 Sunset','The Sun goes down in the West. The shadow is very long and points East.']][ph];
+  $('clock').textContent=t[0]+'  '+h12+':'+String(m).padStart(2,'0')+' '+ap;
+  if(t[1]!==lastMsg){$('msg').textContent=t[1];lastMsg=t[1]}
+  $('fill').style.width=(day?Math.min(100,len/(hh*5)*100):0)+'%';
+  $('len').textContent=!day?'none':len<hh*.6?'short':len<hh*2?'medium':'long';
+}
+
+function frame(now){
+  const dt=Math.min(.05,(now-last)/1000);last=now;clock+=dt;
+  if(!paused)hour=(hour+dt*24/DAY)%24;
+  draw();requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
